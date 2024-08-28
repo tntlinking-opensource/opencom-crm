@@ -1,0 +1,431 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.crmCluePool.dao.CrmCluePoolDao">
+  <sql id="crmCluePoolColumns">
+    <trim suffixOverrides=",">
+      a.id AS "id",
+      a.cpl_name AS "cplName",
+      su1.name AS "cplResponsible",
+      ccpmg.members AS "members",
+      ccpmg.membersp AS "membersp",
+      cc1g.counts  AS "countsxss",
+      cc2g.counts  AS "countswfp",
+      a.cpl_member_claim_rules AS "cplMemberClaimRules",
+      a.cpl_member_claim_limit  AS "cplMemberClaimLimit",
+      a.cpl_auto_where_1 AS "cplAutoWhere1",
+      a.cpl_recycle_day AS "cplRecycleDay",
+      a.cpl_recycle_status AS "cplRecycleStatus",
+      a.create_by AS "createBy",
+      a.create_date AS "createDate",
+      a.update_by AS "updateBy",
+      a.update_date AS "updateDate",
+      a.del_flag AS "delFlag",
+      a.remarks AS "remarks",
+    </trim>
+  </sql>
+  <sql id="crmCluePoolJoins">
+left join
+(select cpl_id,group_concat(concat(su.id,'|',su.name)) as members,group_concat(su.name) as membersp  from crm_clue_pool_member ccpm left join
+sys_user su on ccpm.member_id  = su.id
+group by cpl_id) ccpmg on a.id = ccpmg.cpl_id
+left join sys_user su1 on a.cpl_responsible = su1.id
+left join
+(select count(1) as counts,clues_pool_id from crm_clues cc1 group by clues_pool_id ) cc1g on a.id = cc1g.clues_pool_id
+left join
+(select count(1) as counts,clues_pool_id from crm_clues cc2 where clues_state = '-1' group by clues_pool_id) cc2g on a.id = cc2g.clues_pool_id
+  </sql>
+  <resultMap id="resultCrmCluePoolMap" type="com.geeke.crmCluePool.entity.CrmCluePool">
+    <result property="id" column="id" />
+    <result property="cplName" column="cplName" />
+    <result property="cplResponsible" column="cplResponsible" />
+    <result property="members" column="members" />
+    <result property="membersp" column="membersp" />
+    <result property="countsxss" column="countsxss" />
+    <result property="countswfp" column="countswfp" />
+    <result property="cplRuleType" column="cplRuleType" />
+    <result property="cplMemberClaimRules" column="cplMemberClaimRules" />
+    <result property="cplMemberClaimLimit" column="cplMemberClaimLimit" />
+    <result property="cplAutoWhere1" column="cplAutoWhere1" />
+    <result property="cplAutoWhere2" column="cplAutoWhere2" />
+    <result property="cplAutoNum" column="cplAutoNum" />
+    <result property="cplRecycleDay" column="cplRecycleDay" />
+    <result property="cplRecycleStatus" column="cplRecycleStatus" />
+    <result property="createBy" column="createBy" />
+    <result property="createDate" column="createDate" />
+    <result property="updateBy" column="updateBy" />
+    <result property="updateDate" column="updateDate" />
+    <result property="delFlag" column="delFlag" />
+    <result property="remarks" column="remarks" />
+  </resultMap>
+  <resultMap id="resultCrmUserlsMap" type="com.geeke.crmCluePool.entity.CrmUserls">
+    <result property="id" column="id" />
+    <result property="jobNumber" column="jobNumber" />
+    <result property="name" column="name" />
+    <result property="sex" column="sex" />
+    <result property="department" column="department" />
+    <result property="position" column="position" />
+    <result property="phone" column="phone" />
+  </resultMap>
+  <select id="get" resultMap="resultCrmCluePoolMap">
+    SELECT
+    <include refid="crmCluePoolColumns" />
+    FROM crm_clue_pool a
+    <include refid="crmCluePoolJoins" />
+    WHERE a.id = #{id}
+  </select>
+  <select id="count" resultType="int">
+    SELECT COUNT(*) FROM crm_clue_pool a
+    <include refid="crmCluePoolJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+  </select>
+  <select id="listPage" resultMap="resultCrmCluePoolMap">
+    SELECT
+    <include refid="crmCluePoolColumns" />
+    FROM crm_clue_pool a
+    <include refid="crmCluePoolJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+    <choose>
+      <when test="order != null and order != ''">
+        ORDER BY ${order}
+      </when>
+      <otherwise>
+        ORDER BY a.update_date DESC
+      </otherwise>
+    </choose>
+    LIMIT #{limit} OFFSET #{offset}
+  </select>
+  <select id="listAll" resultMap="resultCrmCluePoolMap">
+    SELECT
+    <include refid="crmCluePoolColumns" />
+    FROM crm_clue_pool a
+    <include refid="crmCluePoolJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+    <choose>
+      <when test="order != null and order != ''">
+        ORDER BY ${order}
+      </when>
+      <otherwise>
+        ORDER BY a.update_date DESC
+      </otherwise>
+    </choose>
+  </select>
+  <insert id="insert">
+    INSERT INTO crm_clue_pool(
+    <trim suffixOverrides=",">
+      id,
+      cpl_name,
+      cpl_responsible,
+      cpl_rule_type,
+      cpl_member_claim_rules,
+      cpl_member_claim_limit,
+      cpl_auto_where_1,
+      cpl_auto_where_2,
+      cpl_auto_num,
+      cpl_recycle_day,
+      cpl_recycle_status,
+      create_by,
+      create_date,
+      update_by,
+      update_date,
+      del_flag,
+      remarks,
+    </trim>
+    ) VALUES (
+    <trim suffixOverrides=",">
+      #{ id },
+      #{ cplName },
+      #{ cplResponsible },
+      #{ cplRuleType },
+      #{ cplMemberClaimRules },
+      #{ cplMemberClaimLimit },
+      #{ cplAutoWhere1 },
+      #{ cplAutoWhere2 },
+      #{ cplAutoNum },
+      #{ cplRecycleDay },
+      #{ cplRecycleStatus },
+      #{ createBy },
+      #{ createDate },
+      #{ updateBy },
+      #{ updateDate },
+      #{ delFlag },
+      #{ remarks },
+    </trim>
+    )
+  </insert>
+  <update id="update">
+    UPDATE crm_clue_pool SET
+    <trim suffixOverrides=",">
+      cpl_name = #{ cplName },
+      cpl_responsible = #{ cplResponsible },
+      cpl_rule_type = #{ cplRuleType },
+      cpl_member_claim_rules = #{ cplMemberClaimRules },
+      cpl_member_claim_limit = #{ cplMemberClaimLimit },
+      cpl_auto_where_1 = #{ cplAutoWhere1 },
+      cpl_auto_where_2 = #{ cplAutoWhere2 },
+      cpl_auto_num = #{ cplAutoNum },
+      cpl_recycle_day = #{ cplRecycleDay },
+      cpl_recycle_status = #{ cplRecycleStatus },
+      update_by = #{ updateBy },
+      update_date = #{ updateDate },
+      remarks = #{ remarks },
+    </trim>
+    WHERE id = #{id}
+    and update_date = #{oldUpdateDate}
+  </update>
+  <update id="delete">
+    UPDATE crm_clue_pool SET
+    update_by = #{updateBy},
+    update_date = #{updateDate},
+    del_flag = #{DEL_FLAG_DELETE}
+    WHERE id = #{id}
+    and update_date = #{oldUpdateDate}
+  </update>
+  <insert id="bulkInsert" parameterType="java.util.List">
+    INSERT INTO crm_clue_pool(
+    <trim suffixOverrides=",">
+      id,
+      cpl_name,
+      cpl_responsible,
+      cpl_rule_type,
+      cpl_member_claim_rules,
+      cpl_member_claim_limit,
+      cpl_auto_where_1,
+      cpl_auto_where_2,
+      cpl_auto_num,
+      cpl_recycle_day,
+      cpl_recycle_status,
+      create_by,
+      create_date,
+      update_by,
+      update_date,
+      del_flag,
+      remarks,
+    </trim>
+    ) VALUES
+    <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+      (
+      <trim suffixOverrides=",">
+        #{entity.id},
+        #{entity.cplName},
+        #{entity.cplResponsible},
+        #{entity.cplRuleType},
+        #{entity.cplMemberClaimRules},
+        #{entity.cplMemberClaimLimit},
+        #{entity.cplAutoWhere1},
+        #{entity.cplAutoWhere2},
+        #{entity.cplAutoNum},
+        #{entity.cplRecycleDay},
+        #{entity.cplRecycleStatus},
+        #{entity.createBy},
+        #{entity.createDate},
+        #{entity.updateBy},
+        #{entity.updateDate},
+        #{entity.delFlag},
+        #{entity.remarks},
+      </trim>
+      )
+    </foreach>
+  </insert>
+  <update id="bulkUpdate" parameterType="java.util.List">
+    UPDATE crm_clue_pool
+    <set>
+      <trim prefix="cpl_name=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cplName}
+        </foreach>
+      </trim>
+      <trim prefix="cpl_responsible=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cplResponsible}
+        </foreach>
+      </trim>
+      <trim prefix="cpl_rule_type=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cplRuleType}
+        </foreach>
+      </trim>
+      <trim prefix="cpl_member_claim_rules=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cplMemberClaimRules}
+        </foreach>
+      </trim>
+      <trim prefix="cpl_member_claim_limit=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cplMemberClaimLimit}
+        </foreach>
+      </trim>
+      <trim prefix="cpl_auto_where_1=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cplAutoWhere1}
+        </foreach>
+      </trim>
+      <trim prefix="cpl_auto_where_2=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cplAutoWhere2}
+        </foreach>
+      </trim>
+      <trim prefix="cpl_auto_num=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cplAutoNum}
+        </foreach>
+      </trim>
+      <trim prefix="cpl_recycle_day=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cplRecycleDay}
+        </foreach>
+      </trim>
+      <trim prefix="cpl_recycle_status=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cplRecycleStatus}
+        </foreach>
+      </trim>
+      <trim prefix="update_by=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateBy}
+        </foreach>
+      </trim>
+      <trim prefix="update_date=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateDate}
+        </foreach>
+      </trim>
+      <trim prefix="remarks=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.remarks}
+        </foreach>
+      </trim>
+    </set>
+    WHERE
+    <foreach collection="entitys" item="entity" index="index" separator="OR" open="(" close=")">
+      id = #{entity.id} and update_date = #{entity.oldUpdateDate}
+    </foreach>
+  </update>
+  <update id="bulkDelete" parameterType="java.util.List">
+    UPDATE crm_clue_pool
+    <set>
+      <trim prefix="del_flag=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then 1
+        </foreach>
+      </trim>
+      <trim prefix="update_by=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateBy}
+        </foreach>
+      </trim>
+      <trim prefix="update_date=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateDate}
+        </foreach>
+      </trim>
+    </set>
+    WHERE
+    <foreach collection="entitys" item="entity" index="index" separator="OR" open="(" close=")">
+      id = #{entity.id} and update_date = #{entity.oldUpdateDate}
+    </foreach>
+  </update>
+
+  <select id="getest" resultType="int">
+    select count(*) from sys_user
+    where 1=1
+    <if test="userofjober != null and userofjober != ''">
+      and id like concat('%', #{userofjober}, '%')
+    </if>
+    <if test="userofname != null and userofname != ''">
+      and name like concat('%', #{userofname}, '%')
+    </if>
+  </select>
+
+
+  <select id="getuserlists" resultMap="resultCrmUserlsMap">
+    select *,od.name department from sys_user su
+    left join org_department od  on su.department_id = od.id
+    where 1=1
+    <if test="userofjober != null and userofjober != ''">
+      and su.id like concat('%', #{userofjober}, '%')
+    </if>
+    <if test="userofname != null and userofname != ''">
+      and su.name like concat('%', #{userofname}, '%')
+    </if>
+    limit #{pageNum},#{pageSize}
+  </select>
+
+
+  <insert id="saveccpl" parameterType="com.geeke.crmCluePool.entity.CrmCluePool">
+    INSERT INTO crm_clue_pool
+    (id, cpl_name, cpl_responsible, cpl_rule_type, cpl_member_claim_rules, cpl_member_claim_limit, cpl_auto_where_1, cpl_auto_where_2, cpl_auto_num, cpl_recycle_day, cpl_recycle_status, create_by, create_date, update_by, update_date, del_flag, remarks)
+    VALUES(#{crmCluePool.id}, #{crmCluePool.cplName}, #{crmCluePool.cplResponsible}, '', #{crmCluePool.cplMemberClaimRules},#{crmCluePool.cplMemberClaimLimit} ,#{crmCluePool.cplAutoWhere1} , '', '',#{crmCluePool.cplRecycleDay} , #{crmCluePool.cplRecycleStatus}, #{crmCluePool.createBy} , now(), #{crmCluePool.createBy}, now(), '0', '');
+  </insert>
+
+
+  <update id="upccpl" parameterType="com.geeke.crmCluePool.entity.CrmCluePool">
+    UPDATE crm_clue_pool
+    SET cpl_name=#{crmCluePool.cplName}, cpl_responsible= #{crmCluePool.cplResponsible}, cpl_member_claim_rules=#{crmCluePool.cplMemberClaimRules}, cpl_member_claim_limit=#{crmCluePool.cplMemberClaimLimit}, cpl_auto_where_1=#{crmCluePool.cplAutoWhere1}, cpl_auto_where_2='', cpl_auto_num='', cpl_recycle_day=#{crmCluePool.cplRecycleDay}, cpl_recycle_status=#{crmCluePool.cplRecycleStatus}, update_by=#{crmCluePool.createBy}, update_date=now()
+    WHERE id=#{crmCluePool.id};
+  </update>
+
+  <insert id="saveccpms">
+    INSERT INTO crm_clue_pool_member
+    (id, cpl_id, member_id, create_by, create_date, update_by, update_date, del_flag, remarks)
+    VALUES(#{id},#{qjid}, #{element}, #{loginName}, now(),
+     #{loginName}, now(), '0', '');
+ </insert>
+
+  <delete id="delecpls">
+    <if test="idlist != null and idlist.size > 0">
+      delete from crm_clue_pool where id in
+      <foreach  item="id" collection="idlist" index="index"  open="(" separator="," close=")">
+        #{id}
+      </foreach>
+    </if>
+  </delete>
+
+  <delete id="delbycplid">
+    <if test="id != null">
+      delete from crm_clue_pool_member where 1=1
+      <if test="id != null and id != ''">
+        and cpl_id = #{id}
+      </if>
+    </if>
+  </delete>
+
+  <delete id="delecf">
+    <if test="qjid != null and qjid != ''">
+      DELETE
+      FROM crm_clue_pool_member
+      where cpl_id = #{qjid} and id NOT IN (
+      select id from(
+      SELECT min(id) as id
+      FROM crm_clue_pool_member where cpl_id = #{qjid}
+      GROUP BY cpl_id,member_id) as abc
+      )
+    </if>
+  </delete>
+
+  <update id="updatecplmids">
+    <if test="brandIdlLst != null and brandIdlLst.size > 0">
+      UPDATE crm_clue_pool_member
+      SET cpl_id = #{qjid}
+      WHERE cpl_id in
+      <foreach  item="id" collection="brandIdlLst" index="index"  open="(" separator="," close=")">
+        #{id}
+      </foreach>
+    </if>
+  </update>
+
+</mapper>

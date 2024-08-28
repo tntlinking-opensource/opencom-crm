@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.crmProClassify.dao.CrmProductsClassifyDao">
+  <sql id="crmProductsClassifyColumns">
+    <trim suffixOverrides=",">
+      a.id AS "id",
+      a.parent_id AS "parent.id",
+      IFNULL(parent.parent_id,'') AS "parent.parentId",
+      IFNULL(parent.pdc_code,'') AS "parent.pdcCode",
+      IFNULL(parent.pdc_name,'') AS "parent.pdcName",
+      IFNULL(parent.del_flag,'') AS "parent.delFlag",
+      IFNULL(parent.remarks,'') AS "parent.remarks",
+      IFNULL(parent.create_by,'') AS "parent.createBy",
+      IFNULL(parent.create_date,'') AS "parent.createDate",
+      IFNULL(parent.update_by,'') AS "parent.updateBy",
+      IFNULL(parent.update_date,'') AS "parent.updateDate",
+      a.pdc_code AS "pdcCode",
+      a.pdc_name AS "pdcName",
+      a.create_by AS "createBy",
+      a.create_date AS "createDate",
+      a.update_by AS "updateBy",
+      a.update_date AS "updateDate",
+      a.del_flag AS "delFlag",
+      a.remarks AS "remarks",
+    </trim>
+  </sql>
+  <sql id="crmProductsClassifyJoins">
+    LEFT JOIN crm_products_classify parent ON parent.id = a.parent_id
+  </sql>
+  <select id="get" resultType="com.geeke.crmProClassify.entity.CrmProductsClassify">
+    SELECT
+    <include refid="crmProductsClassifyColumns" />
+    FROM crm_products_classify a
+    <include refid="crmProductsClassifyJoins" />
+    WHERE a.id = #{id}
+  </select>
+  <select id="count" resultType="int">
+    SELECT COUNT(*) FROM crm_products_classify a
+    <include refid="crmProductsClassifyJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+  </select>
+  <select id="listPage" resultType="com.geeke.crmProClassify.entity.CrmProductsClassify">
+    SELECT
+    <include refid="crmProductsClassifyColumns" />
+    FROM crm_products_classify a
+    <include refid="crmProductsClassifyJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+    <choose>
+      <when test="order != null and order != ''">
+        ORDER BY ${order}
+      </when>
+      <otherwise>
+        ORDER BY a.update_date DESC
+      </otherwise>
+    </choose>
+    LIMIT #{limit} OFFSET #{offset}
+  </select>
+  <select id="listAll" resultType="com.geeke.crmProClassify.entity.CrmProductsClassify">
+    SELECT
+    <include refid="crmProductsClassifyColumns" />
+    FROM crm_products_classify a
+    <include refid="crmProductsClassifyJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+    <choose>
+      <when test="order != null and order != ''">
+        ORDER BY ${order}
+      </when>
+      <otherwise>
+        ORDER BY a.update_date DESC
+      </otherwise>
+    </choose>
+  </select>
+  <insert id="insert">
+    INSERT INTO crm_products_classify(
+    <trim suffixOverrides=",">
+      id,
+      parent_id,
+      pdc_code,
+      pdc_name,
+      create_by,
+      create_date,
+      update_by,
+      update_date,
+      del_flag,
+      remarks,
+    </trim>
+    ) VALUES (
+    <trim suffixOverrides=",">
+      #{ id },
+      #{ parent.id },
+      #{ pdcCode },
+      #{ pdcName },
+      #{ createBy },
+      #{ createDate },
+      #{ updateBy },
+      #{ updateDate },
+      #{ delFlag },
+      #{ remarks },
+    </trim>
+    )
+  </insert>
+  <update id="update">
+    UPDATE crm_products_classify SET
+    <trim suffixOverrides=",">
+      parent_id = #{ parent.id },
+      pdc_name = #{ pdcName },
+      update_by = #{ updateBy },
+      update_date = #{ updateDate },
+      remarks = #{ remarks },
+    </trim>
+    WHERE id = #{id}
+    and update_date = #{oldUpdateDate}
+  </update>
+  <update id="delete">
+    UPDATE crm_products_classify SET
+    update_by = #{updateBy},
+    update_date = #{updateDate},
+    del_flag = #{DEL_FLAG_DELETE}
+    WHERE id = #{id}
+    and update_date = #{oldUpdateDate}
+  </update>
+  <insert id="bulkInsert" parameterType="java.util.List">
+    INSERT INTO crm_products_classify(
+    <trim suffixOverrides=",">
+      id,
+      parent_id,
+      pdc_code,
+      pdc_name,
+      create_by,
+      create_date,
+      update_by,
+      update_date,
+      del_flag,
+      remarks,
+    </trim>
+    ) VALUES
+    <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+      (
+      <trim suffixOverrides=",">
+        #{entity.id},
+        #{entity.parent.id},
+        #{entity.pdcCode},
+        #{entity.pdcName},
+        #{entity.createBy},
+        #{entity.createDate},
+        #{entity.updateBy},
+        #{entity.updateDate},
+        #{entity.delFlag},
+        #{entity.remarks},
+      </trim>
+      )
+    </foreach>
+  </insert>
+  <update id="bulkUpdate" parameterType="java.util.List">
+    UPDATE crm_products_classify
+    <set>
+      <trim prefix="parent_id=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.parent.id}
+        </foreach>
+      </trim>
+      <trim prefix="pdc_name=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.pdcName}
+        </foreach>
+      </trim>
+      <trim prefix="update_by=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateBy}
+        </foreach>
+      </trim>
+      <trim prefix="update_date=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateDate}
+        </foreach>
+      </trim>
+      <trim prefix="remarks=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.remarks}
+        </foreach>
+      </trim>
+    </set>
+    WHERE
+    <foreach collection="entitys" item="entity" index="index" separator="OR" open="(" close=")">
+      id = #{entity.id} and update_date = #{entity.oldUpdateDate}
+    </foreach>
+  </update>
+  <update id="bulkDelete" parameterType="java.util.List">
+    UPDATE crm_products_classify
+    <set>
+      <trim prefix="del_flag=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then 1
+        </foreach>
+      </trim>
+      <trim prefix="update_by=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateBy}
+        </foreach>
+      </trim>
+      <trim prefix="update_date=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateDate}
+        </foreach>
+      </trim>
+    </set>
+    WHERE
+    <foreach collection="entitys" item="entity" index="index" separator="OR" open="(" close=")">
+      id = #{entity.id} and update_date = #{entity.oldUpdateDate}
+    </foreach>
+  </update>
+</mapper>

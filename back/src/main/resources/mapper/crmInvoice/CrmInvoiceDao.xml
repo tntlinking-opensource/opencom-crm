@@ -1,0 +1,545 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.crmInvoice.dao.CrmInvoiceDao">
+  <sql id="crmInvoiceColumns">
+    <trim suffixOverrides=",">
+      a.id AS "id",
+      a.contract_id AS "contract.id",
+      IFNULL(cust.cus_name,'') AS "cusName",
+      IFNULL(contract.dept_id,'') AS "contract.deptId",
+      IFNULL(o.name,'') AS "contract.deptName",
+      IFNULL(contract.contract_code,'') AS "contract.contractCode",
+      IFNULL(contract.contract_name,'') AS "contract.contractName",
+      IFNULL(contract.contract_amount,'') AS "contract.contractAmount",
+      a.sign_comp AS "signComp",
+      a.contract_unit AS "contractUnit",
+      a.par_cust_unit AS "parCustUnit",
+      a.item_name AS "itemName",
+      a.item_code AS "itemCode",
+      a.invoice_type AS "invoiceType",
+      a.tax_num AS "taxNum",
+      a.invoice_address_tel AS "invoiceAddressTel",
+      a.invoice_bank_account AS "invoiceBankAccount",
+      a.invoice_amount AS "invoiceAmount",
+      a.tax_rate AS "taxRate",
+      a.taxes AS "taxes",
+      a.exclud_tax AS "excludTax",
+      a.status AS "status",
+      a.invoice_print AS "invoicePrint",
+      a.invoice_remark AS "invoiceRemark",
+      a.applicant_desc AS "applicantDesc",
+      a.company_name AS "companyName",
+      a.address AS "address",
+      a.recipient AS "recipient",
+      a.phone AS "phone",
+      a.postal_code AS "postalCode",
+      a.invoice_content AS "invoiceContent",
+      a.invoice_kind AS "invoiceKind",
+      a.proc_inst AS "procInst",
+      a.create_by AS "createBy",
+      a.create_date AS "createDate",
+      a.update_by AS "updateBy",
+      a.update_date AS "updateDate",
+      a.proc_status AS "procStatus.id",
+      IFNULL(procStatus.name,'') AS "procStatus.name",
+      a.del_flag AS "delFlag",
+    </trim>
+  </sql>
+
+  <sql id="crmInvoiceJoins">
+    LEFT JOIN crm_contract contract ON contract.id = a.contract_id
+    LEFT JOIN crm_customer cust ON contract.customer_id=cust.id
+    LEFT JOIN org_department o ON o.id = contract.dept_id
+    LEFT JOIN sys_dict_item procStatus ON procStatus.id = a.proc_status
+  </sql>
+
+  <select id="get" resultType="com.geeke.crmInvoice.entity.CrmInvoice">
+    SELECT
+    <include refid="crmInvoiceColumns" />
+    FROM crm_invoice a
+    <include refid="crmInvoiceJoins" />
+    WHERE a.id = #{id}
+  </select>
+  <select id="count" resultType="int">
+    SELECT COUNT(*) FROM crm_invoice a
+    <include refid="crmInvoiceJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+  </select>
+  <select id="listPage" resultType="com.geeke.crmInvoice.entity.CrmInvoice">
+    SELECT
+    <include refid="crmInvoiceColumns" />
+    FROM crm_invoice a
+    <include refid="crmInvoiceJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+    <choose>
+      <when test="order != null and order != ''">
+        ORDER BY ${order}
+      </when>
+      <otherwise>
+      </otherwise>
+    </choose>
+    LIMIT #{limit} OFFSET #{offset}
+  </select>
+
+  <select id="listPages" resultType="com.geeke.crmInvoice.vo.CrmInvoiceResp">
+    SELECT
+    <include refid="crmInvoiceColumns" />
+    FROM crm_invoice a
+    <include refid="crmInvoiceJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+    <choose>
+      <when test="order != null and order != ''">
+        ORDER BY ${order}
+      </when>
+      <otherwise>
+      </otherwise>
+    </choose>
+    LIMIT #{limit} OFFSET #{offset}
+  </select>
+
+  <select id="listAll" resultType="com.geeke.crmInvoice.entity.CrmInvoice">
+    SELECT
+    <include refid="crmInvoiceColumns" />
+    FROM crm_invoice a
+    <include refid="crmInvoiceJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+    <choose>
+      <when test="order != null and order != ''">
+        ORDER BY ${order}
+      </when>
+      <otherwise>
+      </otherwise>
+    </choose>
+  </select>
+  <insert id="insert">
+    INSERT INTO crm_invoice(
+    <trim suffixOverrides=",">
+      id,
+      contract_id,
+      contract_name,
+      cus_name,
+      sign_comp,
+      contract_unit,
+      par_cust_unit,
+      item_name,
+      item_code,
+      invoice_type,
+      tax_num,
+      invoice_address_tel,
+      invoice_bank_account,
+      invoice_amount,
+      tax_rate,
+      taxes,
+      exclud_tax,
+      status,
+      invoice_print,
+      invoice_remark,
+      applicant_desc,
+      company_name,
+      address,
+      recipient,
+      phone,
+      postal_code,
+      invoice_content,
+      invoice_kind,
+      proc_inst,
+      create_by,
+      create_date,
+      update_by,
+      update_date,
+      proc_status,
+      del_flag,
+    </trim>
+    ) VALUES (
+    <trim suffixOverrides=",">
+      #{ id },
+      #{ contract.id },
+      #{ contractName },
+      #{ cusName},
+      #{ signComp },
+      #{ contractUnit },
+      #{ parCustUnit },
+      #{ itemName },
+      #{ itemCode },
+      #{ invoiceType },
+      #{ taxNum },
+      #{ invoiceAddressTel },
+      #{ invoiceBankAccount },
+      #{ invoiceAmount },
+      #{ taxRate },
+      #{ taxes },
+      #{ excludTax },
+      #{ status },
+      #{ invoicePrint },
+      #{ invoiceRemark },
+      #{ applicantDesc },
+      #{ companyName },
+      #{ address },
+      #{ recipient },
+      #{ phone },
+      #{ postalCode },
+      #{ invoiceContent },
+      #{ invoiceKind },
+      #{ procInst },
+      #{ createBy },
+      #{ createDate },
+      #{ updateBy },
+      #{ updateDate },
+      #{ procStatus.id },
+      #{ delFlag },
+    </trim>
+    )
+  </insert>
+  <update id="update">
+    UPDATE crm_invoice SET
+    <trim suffixOverrides=",">
+      contract_id = #{ contract.id },
+      contract_name = #{contractName},
+      cus_name = #{cusName},
+      sign_comp = #{ signComp },
+      contract_unit = #{ contractUnit },
+      par_cust_unit = #{ parCustUnit },
+      item_name = #{ itemName },
+      item_code = #{ itemCode },
+      invoice_type = #{ invoiceType },
+      tax_num = #{ taxNum },
+      invoice_address_tel = #{ invoiceAddressTel },
+      invoice_bank_account = #{ invoiceBankAccount },
+      invoice_amount = #{ invoiceAmount },
+      tax_rate = #{ taxRate },
+      taxes = #{ taxes },
+      exclud_tax = #{ excludTax },
+      status = #{ status },
+      invoice_print = #{ invoicePrint },
+      invoice_remark = #{ invoiceRemark },
+      applicant_desc = #{ applicantDesc },
+      company_name = #{ companyName },
+      address = #{ address },
+      recipient = #{ recipient },
+      phone = #{ phone },
+      postal_code = #{ postalCode },
+      invoice_content = #{ invoiceContent },
+      invoice_kind = #{ invoiceKind },
+      proc_inst = #{ procInst },
+      update_by = #{ updateBy },
+      update_date = #{ updateDate },
+      proc_status = #{ procStatus.id },
+    </trim>
+    WHERE id = #{id}
+  </update>
+  <update id="delete">
+    UPDATE crm_invoice SET
+       update_by = #{updateBy},
+       update_date = #{updateDate},
+       del_flag = #{DEL_FLAG_DELETE}
+    WHERE id = #{id}
+  </update>
+  <insert id="bulkInsert" parameterType="java.util.List">
+    INSERT INTO crm_invoice(
+    <trim suffixOverrides=",">
+      id,
+      contract_id,
+      contract_name,
+      cus_name,
+      sign_comp,
+      contract_unit,
+      par_cust_unit,
+      item_name,
+      item_code,
+      invoice_type,
+      tax_num,
+      invoice_address_tel,
+      invoice_bank_account,
+      invoice_amount,
+      tax_rate,
+      taxes,
+      exclud_tax,
+      status,
+      invoice_print,
+      invoice_remark,
+      applicant_desc,
+      company_name,
+      address,
+      recipient,
+      phone,
+      postal_code,
+      invoice_content,
+      invoice_kind,
+      proc_inst,
+      create_by,
+      create_date,
+      update_by,
+      update_date,
+      proc_status,
+      del_flag,
+    </trim>
+    ) VALUES
+    <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+      (
+      <trim suffixOverrides=",">
+        #{entity.id},
+        #{entity.contract.id},
+        #{entity.contractName},
+        #{entity.cusName},
+        #{entity.signComp},
+        #{entity.contractUnit},
+        #{entity.parCustUnit},
+        #{entity.itemName},
+        #{entity.itemCode},
+        #{entity.invoiceType},
+        #{entity.taxNum},
+        #{entity.invoiceAddressTel},
+        #{entity.invoiceBankAccount},
+        #{entity.invoiceAmount},
+        #{entity.taxRate},
+        #{entity.taxes},
+        #{entity.excludTax},
+        #{entity.status},
+        #{entity.invoicePrint},
+        #{entity.invoiceRemark},
+        #{entity.applicantDesc},
+        #{entity.companyName},
+        #{entity.address},
+        #{entity.recipient},
+        #{entity.phone},
+        #{entity.postalCode},
+        #{entity.invoiceContent},
+        #{entity.invoiceKind},
+        #{entity.procInst},
+        #{entity.createBy},
+        #{entity.createDate},
+        #{entity.updateBy},
+        #{entity.updateDate},
+        #{entity.procStatus.id},
+        #{entity.delFlag},
+      </trim>
+      )
+    </foreach>
+  </insert>
+  <update id="bulkUpdate" parameterType="java.util.List">
+    UPDATE crm_invoice
+    <set>
+      <trim prefix="contract_id=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.contract.id}
+        </foreach>
+      </trim>
+      <trim prefix="contract_name=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.contractName}
+        </foreach>
+      </trim>
+      <trim prefix="cus_name=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cusName}
+        </foreach>
+      </trim>
+      <trim prefix="sign_comp=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.signComp}
+        </foreach>
+      </trim>
+      <trim prefix="contract_unit=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.contractUnit}
+        </foreach>
+      </trim>
+      <trim prefix="par_cust_unit=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.parCustUnit}
+        </foreach>
+      </trim>
+      <trim prefix="item_name=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.itemName}
+        </foreach>
+      </trim>
+      <trim prefix="item_code=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.itemCode}
+        </foreach>
+      </trim>
+      <trim prefix="invoice_type=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.invoiceType}
+        </foreach>
+      </trim>
+      <trim prefix="tax_num=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.taxNum}
+        </foreach>
+      </trim>
+      <trim prefix="invoice_address_tel=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.invoiceAddressTel}
+        </foreach>
+      </trim>
+      <trim prefix="invoice_bank_account=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.invoiceBankAccount}
+        </foreach>
+      </trim>
+      <trim prefix="invoice_amount=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.invoiceAmount}
+        </foreach>
+      </trim>
+      <trim prefix="tax_rate=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.taxRate}
+        </foreach>
+      </trim>
+      <trim prefix="taxes=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.taxes}
+        </foreach>
+      </trim>
+      <trim prefix="exclud_tax=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.excludTax}
+        </foreach>
+      </trim>
+      <trim prefix="status=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.status}
+        </foreach>
+      </trim>
+      <trim prefix="invoice_print=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.invoicePrint}
+        </foreach>
+      </trim>
+      <trim prefix="invoice_remark=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.invoiceRemark}
+        </foreach>
+      </trim>
+      <trim prefix="applicant_desc=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.applicantDesc}
+        </foreach>
+      </trim>
+      <trim prefix="company_name=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.companyName}
+        </foreach>
+      </trim>
+      <trim prefix="address=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.address}
+        </foreach>
+      </trim>
+      <trim prefix="recipient=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.recipient}
+        </foreach>
+      </trim>
+      <trim prefix="phone=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.phone}
+        </foreach>
+      </trim>
+      <trim prefix="postal_code=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.postalCode}
+        </foreach>
+      </trim>
+      <trim prefix="invoice_content=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.invoiceContent}
+        </foreach>
+      </trim>
+      <trim prefix="invoice_kind=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.invoiceKind}
+        </foreach>
+      </trim>
+      <trim prefix="proc_inst=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.procInst}
+        </foreach>
+      </trim>
+      <trim prefix="update_by=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateBy}
+        </foreach>
+      </trim>
+      <trim prefix="update_date=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateDate}
+        </foreach>
+      </trim>
+      <trim prefix="proc_status=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.procStatus.id}
+        </foreach>
+      </trim>
+    </set>
+    WHERE id IN
+    <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+      #{entity.id}
+    </foreach>
+  </update>
+  <update id="bulkDelete" parameterType="java.util.List">
+    UPDATE crm_invoice
+    <set>
+      <trim prefix="del_flag=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then 1
+        </foreach>
+      </trim>
+    </set>
+    WHERE id IN
+    <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+      #{entity.id}
+    </foreach>
+  </update>
+
+
+  <select id="getContractList" resultType="com.geeke.crmInvoice.vo.CrmContract">
+    select
+        cc.id ,
+        cc.contract_code as contractCode,
+        cc.contract_name as contractName,
+        cc.contract_amount as contractAmount,
+        cust.cus_name as cusName,
+        o.name as deptName
+    from
+      crm_contract cc
+      left join crm_customer cust on cust.id= cc.customer_id
+      left join org_department o on o.id=cc.dept_id
+    where cc. contract_status  =#{contractStatus}
+    <if test='contractCode != "" and contractCode != null'>
+      and cc.contract_code like concat('%', #{contractCode}, '%')
+    </if>
+  </select>
+
+  <update id="updateBackInvoice">
+    update crm_invoice
+        set status=#{status}
+    where
+        proc_inst =#{procInst}
+        and del_flag =0
+  </update>
+
+</mapper>

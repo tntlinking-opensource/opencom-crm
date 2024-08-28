@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.crmCustomer.dao.CrmCustomerCotDao">
+  <sql id="crmCustomerCotColumns">
+    <trim suffixOverrides=",">
+      a.id AS "id",
+      a.cus_id AS "cusId",
+      a.cot_id AS "cotId",
+      a.create_by AS "createBy",
+      a.create_date AS "createDate",
+      a.update_by AS "updateBy",
+      a.update_date AS "updateDate",
+      a.del_flag AS "delFlag",
+      a.remarks AS "remarks",
+    </trim>
+  </sql>
+  <sql id="crmCustomerCotJoins">
+    LEFT JOIN crm_customer cus ON cus.id = a.cus_id
+  </sql>
+  <resultMap id="resultCrmCustomerCotMap" type="com.geeke.crmCustomer.entity.CrmCustomerCot">
+    <result property="id" column="id" />
+    <result property="cotId" column="cotId" />
+    <result property="cusId" column="cusId" />
+    <result property="createBy" column="createBy" />
+    <result property="createDate" column="createDate" />
+    <result property="updateBy" column="updateBy" />
+    <result property="updateDate" column="updateDate" />
+    <result property="delFlag" column="delFlag" />
+    <result property="remarks" column="remarks" />
+    <!--    <association property="cus" javaType="com.geeke.crmCustomer.entity.CrmCustomer">-->
+    <!--      <result property="id" column="cus.id" />-->
+    <!--    </association>-->
+  </resultMap>
+  <select id="get" resultMap="resultCrmCustomerCotMap">
+    SELECT
+    <include refid="crmCustomerCotColumns" />
+    FROM crm_customer_cot a
+    <include refid="crmCustomerCotJoins" />
+    WHERE a.id = #{id}
+  </select>
+  <select id="count" resultType="int">
+    SELECT COUNT(*) FROM crm_customer_Cot a
+    <include refid="crmCustomerCotJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+  </select>
+  <select id="listPage" resultMap="resultCrmCustomerCotMap">
+    SELECT
+    <include refid="crmCustomerCotColumns" />
+    FROM crm_customer_cot a
+    <include refid="crmCustomerCotJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+    <choose>
+      <when test="order != null and order != ''">
+        ORDER BY ${order}
+      </when>
+      <otherwise>
+        ORDER BY a.update_date DESC
+      </otherwise>
+    </choose>
+    LIMIT #{limit} OFFSET #{offset}
+  </select>
+  <select id="listAll" resultMap="resultCrmCustomerCotMap">
+    SELECT
+    <include refid="crmCustomerCotColumns" />
+    FROM crm_customer_Cot a
+    <include refid="crmCustomerCotJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+    <choose>
+      <when test="order != null and order != ''">
+        ORDER BY ${order}
+      </when>
+      <otherwise>
+        ORDER BY a.update_date DESC
+      </otherwise>
+    </choose>
+  </select>
+  <insert id="insert">
+    INSERT INTO crm_customer_cot(
+    <trim suffixOverrides=",">
+      id,
+      cus_id,
+      cot_id,
+      create_by,
+      create_date,
+      update_by,
+      update_date,
+      del_flag,
+      remarks,
+    </trim>
+    ) VALUES (
+    <trim suffixOverrides=",">
+      #{ id },
+      #{ cusId },
+      #{ cotId },
+      #{ createBy },
+      #{ createDate },
+      #{ updateBy },
+      #{ updateDate },
+      #{ delFlag },
+      #{ remarks },
+    </trim>
+    )
+  </insert>
+  <update id="update">
+    UPDATE crm_customer_Cot SET
+    <trim suffixOverrides=",">
+      cus_id = #{ cusId },
+      cot_id = #{ cotId },
+      update_by = #{ updateBy },
+      update_date = #{ updateDate },
+      remarks = #{ remarks },
+    </trim>
+    WHERE id = #{id}
+    and update_date = #{oldUpdateDate}
+  </update>
+  <update id="delete">
+    UPDATE crm_customer_Cot SET
+                              update_by = #{updateBy},
+                              update_date = #{updateDate},
+                              del_flag = #{DEL_FLAG_DELETE}
+    WHERE id = #{id}
+      and update_date = #{oldUpdateDate}
+  </update>
+  <insert id="bulkInsert" parameterType="java.util.List">
+    INSERT INTO crm_customer_cot(
+    <trim suffixOverrides=",">
+      id,
+      cus_id,
+      cot_id,
+      create_by,
+      create_date,
+      update_by,
+      update_date,
+      del_flag,
+      remarks,
+    </trim>
+    ) VALUES
+    <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+      (
+      <trim suffixOverrides=",">
+        #{entity.id},
+        #{entity.cusId},
+        #{entity.cotId},
+        #{entity.createBy},
+        #{entity.createDate},
+        #{entity.updateBy},
+        #{entity.updateDate},
+        #{entity.delFlag},
+        #{entity.remarks},
+      </trim>
+      )
+    </foreach>
+  </insert>
+  <update id="bulkUpdate" parameterType="java.util.List">
+    UPDATE crm_customer_cot
+    <set>
+      <trim prefix="cus_id=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cusId}
+        </foreach>
+      </trim>
+      <trim prefix="cot_id=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cotId}
+        </foreach>
+      </trim>
+      <trim prefix="update_by=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateBy}
+        </foreach>
+      </trim>
+      <trim prefix="update_date=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateDate}
+        </foreach>
+      </trim>
+      <trim prefix="remarks=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.remarks}
+        </foreach>
+      </trim>
+    </set>
+    WHERE
+    <foreach collection="entitys" item="entity" index="index" separator="OR" open="(" close=")">
+      id = #{entity.id} and update_date = #{entity.oldUpdateDate}
+    </foreach>
+  </update>
+  <update id="bulkDelete" parameterType="java.util.List">
+    UPDATE crm_customer_cot
+    <set>
+      <trim prefix="del_flag=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then 1
+        </foreach>
+      </trim>
+      <trim prefix="update_by=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateBy}
+        </foreach>
+      </trim>
+      <trim prefix="update_date=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateDate}
+        </foreach>
+      </trim>
+    </set>
+    WHERE
+    <foreach collection="entitys" item="entity" index="index" separator="OR" open="(" close=")">
+      id = #{entity.id} and update_date = #{entity.oldUpdateDate}
+    </foreach>
+  </update>
+
+  <select id="getCrmCustomerCotByCotId" resultMap="resultCrmCustomerCotMap">
+    SELECT
+    <include refid="crmCustomerCotColumns" />
+    FROM crm_customer_cot a
+    WHERE a.cot_id = #{cotId}
+  </select>
+
+  <select id="getCrmCustomerCotsByCusId" resultMap="resultCrmCustomerCotMap">
+    SELECT
+    <include refid="crmCustomerCotColumns" />
+    FROM crm_customer_cot a
+    WHERE a.cus_id = #{cusId}
+  </select>
+
+</mapper>

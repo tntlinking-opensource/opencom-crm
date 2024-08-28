@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.contract.dao.CrmContractPayDao">
+  <sql id="crmContractPayColumns">
+    <trim suffixOverrides=",">
+      a.id AS "id",
+      a.contract_id AS "contractId",
+      a.order AS "order",
+      a.pay_date AS "payDate",
+      a.pay_rate AS "payRate",
+      a.pay_amount AS "payAmount",
+      a.remark AS "remark",
+      a.create_by AS "createBy",
+      a.update_by AS "updateBy",
+      a.create_date AS "createDate",
+      a.update_date AS "updateDate",
+      a.del_flag AS "delFlag",
+    </trim>
+  </sql>
+  <sql id="crmContractPayJoins">
+  </sql>
+
+  <select id="get" resultType="com.geeke.contract.entity.CrmContractPay">
+    SELECT
+    <include refid="crmContractPayColumns" />
+    FROM crm_contract_pay a
+    <include refid="crmContractPayJoins" />
+    WHERE a.id = #{id}
+  </select>
+  <select id="count" resultType="int">
+    SELECT COUNT(*) FROM crm_contract_pay a
+    <include refid="crmContractPayJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+  </select>
+  <select id="listPage" resultType="com.geeke.contract.entity.CrmContractPay">
+    SELECT
+    <include refid="crmContractPayColumns" />
+    FROM crm_contract_pay a
+    <include refid="crmContractPayJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+    <choose>
+      <when test="order != null and order != ''">
+        ORDER BY ${order}
+      </when>
+      <otherwise>
+        ORDER BY a.update_date DESC
+      </otherwise>
+    </choose>
+    LIMIT #{limit} OFFSET #{offset}
+  </select>
+  <select id="listAll" resultType="com.geeke.contract.entity.CrmContractPay">
+    SELECT
+    <include refid="crmContractPayColumns" />
+    FROM crm_contract_pay a
+    <include refid="crmContractPayJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+    <choose>
+      <when test="order != null and order != ''">
+        ORDER BY ${order}
+      </when>
+      <otherwise>
+        ORDER BY a.update_date DESC
+      </otherwise>
+    </choose>
+  </select>
+  <insert id="insert">
+    INSERT INTO crm_contract_pay(
+    <trim suffixOverrides=",">
+      id,
+      contract_id,
+      `order`,
+      pay_date,
+      pay_rate,
+      pay_amount,
+      remark,
+      create_by,
+      update_by,
+      create_date,
+      update_date,
+      del_flag,
+    </trim>
+    ) VALUES (
+    <trim suffixOverrides=",">
+      #{ id },
+      #{ contractId },
+      #{ order },
+      #{ payDate },
+      #{ payRate },
+      #{ payAmount },
+      #{ remark },
+      #{ createBy },
+      #{ updateBy },
+      #{ createDate },
+      #{ updateDate },
+      #{ delFlag },
+    </trim>
+    )
+  </insert>
+  <update id="update">
+    UPDATE crm_contract_pay SET
+    <trim suffixOverrides=",">
+      contract_id = #{ contractId },
+      `order` = #{ order },
+      pay_date = #{ payDate },
+      pay_rate = #{ payRate },
+      pay_amount = #{ payAmount },
+      remark = #{ remark },
+      update_by = #{ updateBy },
+      update_date = #{ updateDate },
+    </trim>
+    WHERE id = #{id}
+    and update_date = #{oldUpdateDate}
+  </update>
+  <update id="delete">
+    UPDATE crm_contract_pay SET
+    update_by = #{updateBy},
+    update_date = #{updateDate},
+    del_flag = #{DEL_FLAG_DELETE}
+    WHERE id = #{id}
+    and update_date = #{oldUpdateDate}
+  </update>
+  <insert id="bulkInsert" parameterType="java.util.List">
+    INSERT INTO crm_contract_pay(
+    <trim suffixOverrides=",">
+      id,
+      contract_id,
+      `order`,
+      pay_date,
+      pay_rate,
+      pay_amount,
+      remark,
+      create_by,
+      update_by,
+      create_date,
+      update_date,
+      del_flag,
+    </trim>
+    ) VALUES
+    <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+      (
+      <trim suffixOverrides=",">
+        #{entity.id},
+        #{entity.contractId},
+        #{entity.order},
+        #{entity.payDate},
+        #{entity.payRate},
+        #{entity.payAmount},
+        #{entity.remark},
+        #{entity.createBy},
+        #{entity.updateBy},
+        #{entity.createDate},
+        #{entity.updateDate},
+        #{entity.delFlag},
+      </trim>
+      )
+    </foreach>
+  </insert>
+    <update id="bulkUpdate" parameterType="java.util.List">
+    UPDATE crm_contract_pay
+    <set>
+      <trim prefix="contract_id=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.contractId}
+        </foreach>
+      </trim>
+      <trim prefix="`order`=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.order}
+        </foreach>
+      </trim>
+      <trim prefix="pay_date=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.payDate}
+        </foreach>
+      </trim>
+      <trim prefix="pay_rate=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.payRate}
+        </foreach>
+      </trim>
+      <trim prefix="pay_amount=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.payAmount}
+        </foreach>
+      </trim>
+      <trim prefix="remark=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.remark}
+        </foreach>
+      </trim>
+      <trim prefix="update_by=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateBy}
+        </foreach>
+      </trim>
+      <trim prefix="update_date=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateDate}
+        </foreach>
+      </trim>
+    </set>
+    WHERE
+    <foreach collection="entitys" item="entity" index="index" separator="OR" open="(" close=")">
+      id = #{entity.id}
+    </foreach>
+  </update>
+  <update id="bulkDelete" parameterType="java.util.List">
+    UPDATE crm_contract_pay
+    <set>
+      <trim prefix="del_flag=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then 1
+        </foreach>
+      </trim>
+      <trim prefix="update_by=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateBy}
+        </foreach>
+      </trim>
+      <trim prefix="update_date=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateDate}
+        </foreach>
+      </trim>
+    </set>
+    WHERE
+    <foreach collection="entitys" item="entity" index="index" separator="OR" open="(" close=")">
+      id = #{entity.id} and update_date = #{entity.oldUpdateDate}
+    </foreach>
+  </update>
+
+  <update id="deleteByContractId">
+    update crm_contract_pay
+    set del_flag = #{deleteFlag},
+    update_by = #{updateBy},
+    update_date = #{updateDate}
+    where contract_id = #{contractId}
+
+  </update>
+</mapper>

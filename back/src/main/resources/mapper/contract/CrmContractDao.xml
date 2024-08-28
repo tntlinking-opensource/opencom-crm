@@ -1,0 +1,396 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.contract.dao.CrmContractDao">
+  <sql id="crmContractColumns">
+    <trim suffixOverrides=",">
+      a.id AS "id",
+      a.dept_id AS "deptId",
+      a.user_id AS "userId",
+      a.customer_id AS "customerId",
+      a.opportunity_id AS "opportunityId",
+      a.contract_code AS "contractCode",
+      a.contract_name AS "contractName",
+      a.contract_amount AS "contractAmount",
+      a.sign_date AS "signDate",
+      a.begin_date AS "beginDate",
+      a.end_date AS "endDate",
+      a.party_a AS "partyA",
+      a.party_b AS "partyB",
+      a.pay_type AS "payType",
+      a.remark AS "remark",
+      a.attachment AS "attachment",
+      a.create_by AS "createBy",
+      a.update_by AS "updateBy",
+      a.create_date AS "createDate",
+      a.update_date AS "updateDate",
+      a.del_flag AS "delFlag",
+      a.proc_inst AS "procInst",
+      a.proc_status AS "procStatus.id",
+      IFNULL(procStatus.name,'') AS "procStatus.name",
+      a.contract_status AS "contractStatus",
+    </trim>
+  </sql>
+  <sql id="crmContractJoins">
+    LEFT JOIN sys_dict_item procStatus ON procStatus.id = a.proc_status
+  </sql>
+  <select id="get" resultType="com.geeke.contract.entity.CrmContract">
+    SELECT
+    <include refid="crmContractColumns" />
+    FROM crm_contract a
+    <include refid="crmContractJoins" />
+    WHERE a.id = #{id}
+  </select>
+
+  <select id="byotyid" resultType="com.geeke.contract.entity.CrmContract">
+    SELECT
+    <include refid="crmContractColumns" />
+    FROM crm_contract a
+    <include refid="crmContractJoins" />
+    WHERE a.opportunity_id = #{id}
+  </select>
+
+  <select id="count" resultType="int">
+    SELECT COUNT(*) FROM crm_contract a
+    <include refid="crmContractJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+  </select>
+  <select id="listPage" resultType="com.geeke.contract.entity.CrmContract">
+    SELECT
+    <include refid="crmContractColumns" />
+    FROM crm_contract a
+    <include refid="crmContractJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+    <choose>
+      <when test="order != null and order != ''">
+        ORDER BY ${order}
+      </when>
+      <otherwise>
+        ORDER BY a.update_date DESC
+      </otherwise>
+    </choose>
+    LIMIT #{limit} OFFSET #{offset}
+  </select>
+  <select id="listAll" resultType="com.geeke.contract.entity.CrmContract">
+    SELECT
+    <include refid="crmContractColumns" />
+    FROM crm_contract a
+    <include refid="crmContractJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+    <choose>
+      <when test="order != null and order != ''">
+        ORDER BY ${order}
+      </when>
+      <otherwise>
+        ORDER BY a.update_date DESC
+      </otherwise>
+    </choose>
+  </select>
+  <insert id="insert">
+    INSERT INTO crm_contract(
+    <trim suffixOverrides=",">
+      id,
+      dept_id,
+      user_id,
+      customer_id,
+      opportunity_id,
+      contract_code,
+      contract_name,
+      contract_amount,
+      sign_date,
+      begin_date,
+      end_date,
+      party_a,
+      party_b,
+      pay_type,
+      remark,
+      attachment,
+      create_by,
+      update_by,
+      create_date,
+      update_date,
+      del_flag,
+      proc_inst,
+      proc_status,
+      contract_status,
+    </trim>
+    ) VALUES (
+    <trim suffixOverrides=",">
+      #{ id },
+      #{ deptId },
+      #{ userId },
+      #{ customerId },
+      #{ opportunityId },
+      #{ contractCode },
+      #{ contractName },
+      #{ contractAmount },
+      #{ signDate },
+      #{ beginDate },
+      #{ endDate },
+      #{ partyA },
+      #{ partyB },
+      #{ payType },
+      #{ remark },
+      #{ attachment },
+      #{ createBy },
+      #{ updateBy },
+      #{ createDate },
+      #{ updateDate },
+      #{ delFlag },
+      #{ procInst },
+      #{ procStatus.id },
+      #{ contractStatus },
+    </trim>
+    )
+  </insert>
+  <update id="update">
+    UPDATE crm_contract SET
+    <trim suffixOverrides=",">
+      dept_id = #{ deptId },
+      user_id = #{ userId },
+      customer_id = #{ customerId },
+      opportunity_id = #{ opportunityId },
+      contract_code = #{ contractCode },
+      contract_name = #{ contractName },
+      contract_amount = #{ contractAmount },
+      sign_date = #{ signDate },
+      begin_date = #{ beginDate },
+      end_date = #{ endDate },
+      party_a = #{ partyA },
+      party_b = #{ partyB },
+      pay_type = #{ payType },
+      remark = #{ remark },
+      attachment = #{ attachment },
+      update_by = #{ updateBy },
+      update_date = #{ updateDate },
+      proc_inst = #{ procInst },
+      proc_status = #{ procStatus.id },
+      contract_status = #{ contractStatus },
+    </trim>
+    WHERE id = #{id}
+    and update_date = #{oldUpdateDate}
+  </update>
+  <update id="delete">
+    UPDATE crm_contract SET
+    update_by = #{updateBy},
+    update_date = #{updateDate},
+    del_flag = #{DEL_FLAG_DELETE}
+    WHERE id = #{id}
+    and update_date = #{oldUpdateDate}
+  </update>
+  <insert id="bulkInsert" parameterType="java.util.List">
+    INSERT INTO crm_contract(
+    <trim suffixOverrides=",">
+      id,
+      dept_id,
+      user_id,
+      customer_id,
+      opportunity_id,
+      contract_code,
+      contract_name,
+      contract_amount,
+      sign_date,
+      begin_date,
+      end_date,
+      party_a,
+      party_b,
+      pay_type,
+      remark,
+      attachment,
+      create_by,
+      update_by,
+      create_date,
+      update_date,
+      del_flag,
+      proc_inst,
+      proc_status,
+      contract_status,
+    </trim>
+    ) VALUES
+    <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+      (
+      <trim suffixOverrides=",">
+        #{entity.id},
+        #{entity.deptId},
+        #{entity.userId},
+        #{entity.customerId},
+        #{entity.opportunityId},
+        #{entity.contractCode},
+        #{entity.contractName},
+        #{entity.contractAmount},
+        #{entity.signDate},
+        #{entity.beginDate},
+        #{entity.endDate},
+        #{entity.partyA},
+        #{entity.partyB},
+        #{entity.payType},
+        #{entity.remark},
+        #{entity.attachment},
+        #{entity.createBy},
+        #{entity.updateBy},
+        #{entity.createDate},
+        #{entity.updateDate},
+        #{entity.delFlag},
+        #{entity.procInst},
+        #{entity.procStatus.id},
+        #{entity.contractStatus},
+      </trim>
+      )
+    </foreach>
+  </insert>
+  <update id="bulkUpdate" parameterType="java.util.List">
+    UPDATE crm_contract
+    <set>
+      <trim prefix="dept_id=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.deptId}
+        </foreach>
+      </trim>
+      <trim prefix="user_id=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.userId}
+        </foreach>
+      </trim>
+      <trim prefix="customer_id=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.customerId}
+        </foreach>
+      </trim>
+      <trim prefix="opportunity_id=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.opportunityId}
+        </foreach>
+      </trim>
+      <trim prefix="contract_code=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.contractCode}
+        </foreach>
+      </trim>
+      <trim prefix="contract_name=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.contractName}
+        </foreach>
+      </trim>
+      <trim prefix="contract_amount=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.contractAmount}
+        </foreach>
+      </trim>
+      <trim prefix="sign_date=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.signDate}
+        </foreach>
+      </trim>
+      <trim prefix="begin_date=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.beginDate}
+        </foreach>
+      </trim>
+      <trim prefix="end_date=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.endDate}
+        </foreach>
+      </trim>
+      <trim prefix="party_a=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.partyA}
+        </foreach>
+      </trim>
+      <trim prefix="party_b=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.partyB}
+        </foreach>
+      </trim>
+      <trim prefix="pay_type=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.payType}
+        </foreach>
+      </trim>
+      <trim prefix="remark=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.remark}
+        </foreach>
+      </trim>
+      <trim prefix="attachment=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.attachment}
+        </foreach>
+      </trim>
+      <trim prefix="update_by=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateBy}
+        </foreach>
+      </trim>
+      <trim prefix="update_date=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateDate}
+        </foreach>
+      </trim>
+      <trim prefix="proc_inst=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.procInst}
+        </foreach>
+      </trim>
+      <trim prefix="proc_status=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.procStatus.id}
+        </foreach>
+      </trim>
+      <trim prefix="contract_status=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.contractStatus}
+        </foreach>
+      </trim>
+    </set>
+    WHERE
+    <foreach collection="entitys" item="entity" index="index" separator="OR" open="(" close=")">
+      id = #{entity.id} and update_date = #{entity.oldUpdateDate}
+    </foreach>
+  </update>
+  <update id="bulkDelete" parameterType="java.util.List">
+    UPDATE crm_contract
+    <set>
+      <trim prefix="del_flag=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then 1
+        </foreach>
+      </trim>
+      <trim prefix="update_by=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateBy}
+        </foreach>
+      </trim>
+      <trim prefix="update_date=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateDate}
+        </foreach>
+      </trim>
+    </set>
+    WHERE
+    <foreach collection="entitys" item="entity" index="index" separator="OR" open="(" close=")">
+      id = #{entity.id} and update_date = #{entity.oldUpdateDate}
+    </foreach>
+  </update>
+  <select id="getByPaymentBackPlanNo" resultType="com.geeke.contract.entity.CrmContract">
+    SELECT
+    <include refid="crmContractColumns" />
+    FROM crm_contract a
+    <include refid="crmContractJoins" />
+    WHERE concat(a.sign_date,a.contract_code) = #{paymentBackPlanNo}
+    limit 1
+  </select>
+</mapper>

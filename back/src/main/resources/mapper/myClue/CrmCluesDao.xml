@@ -1,0 +1,451 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.myClue.dao.CrmCluesDao">
+  <sql id="crmCluesColumns">
+    <trim suffixOverrides=",">
+      distinct
+      a.id AS "id",
+      a.clues_pool_id AS "cluesPool.id",
+      IFNULL(cluesPool.cpl_name,'') AS "cluesPool.cplName",
+      a.clues_responsible AS "cluesResponsible",
+      a.clues_state AS "cluesState",
+      a.clues_name AS "cluesName",
+      a.clues_sources AS "cluesSources",
+      a.clues_contacts AS "cluesContacts",
+      a.phone_number AS "phoneNumber",
+      a.email AS "email",
+      a.company AS "company",
+      a.department AS "department",
+      a.position AS "position",
+      a.region AS "region",
+      a.gender AS "gender",
+      a.birth_date AS "birthDate",
+      a.wechat AS "wechat",
+      a.microblog AS "microblog",
+      a.qq AS "qq",
+      a.addr AS "addr",
+      a.create_by AS "createBy",
+      a.create_date AS "createDate",
+      a.update_by AS "updateBy",
+      a.update_date AS "updateDate",
+      a.del_flag AS "delFlag",
+      a.remarks AS "remarks",
+      a.telephone AS "telephone",
+      su.name AS "name",
+    </trim>
+  </sql>
+  <sql id="crmCluesJoins">
+    inner JOIN crm_clue_pool cluesPool ON cluesPool.id = a.clues_pool_id
+    LEFT JOIN sys_user su ON su.id = a.clues_responsible
+    LEFT JOIN crm_clue_pool_member ccpm ON ccpm.cpl_id=a.clues_pool_id
+    LEFT JOIN sys_user su1 ON su1.id = cluesPool.cpl_responsible
+  </sql>
+  <resultMap id="resultCrmCluesMap" type="com.geeke.myClue.entity.CrmClues">
+    <result property="id" column="id" />
+    <result property="cluesResponsible" column="cluesResponsible" />
+    <result property="cluesState" column="cluesState" />
+    <result property="cluesName" column="cluesName" />
+    <result property="cluesSources" column="cluesSources" />
+    <result property="cluesContacts" column="cluesContacts" />
+    <result property="phoneNumber" column="phoneNumber" />
+    <result property="email" column="email" />
+    <result property="company" column="company" />
+    <result property="department" column="department" />
+    <result property="position" column="position" />
+    <result property="region" column="region" />
+    <result property="gender" column="gender" />
+    <result property="birthDate" column="birthDate" />
+    <result property="wechat" column="wechat" />
+    <result property="microblog" column="microblog" />
+    <result property="qq" column="qq" />
+    <result property="addr" column="addr" />
+    <result property="createBy" column="createBy" />
+    <result property="createDate" column="createDate" />
+    <result property="updateBy" column="updateBy" />
+    <result property="updateDate" column="updateDate" />
+    <result property="delFlag" column="delFlag" />
+    <result property="remarks" column="remarks" />
+    <result property="telephone" column="telephone" />
+    <result property="name" column="name" />
+    <association property="cluesPool" javaType="com.geeke.myClue.entity.MyCrmCluePool">
+      <result property="id" column="cluesPool.id" />
+      <result property="cplName" column="cluesPool.cplName" />
+    </association>
+  </resultMap>
+  <select id="get" resultMap="resultCrmCluesMap">
+    SELECT
+    <include refid="crmCluesColumns" />
+    FROM crm_clues a
+    <include refid="crmCluesJoins" />
+    WHERE a.id = #{id}
+  </select>
+  <select id="count" resultType="int">
+    SELECT COUNT(*) from ( select distinct a.* FROM crm_clues a
+    <include refid="crmCluesJoins" />
+    <where>
+        1=1
+        AND a.id > 0
+      <include refid="Common.whereParams" />
+    </where>
+    ) tt
+  </select>
+  <select id="listPage" resultMap="resultCrmCluesMap">
+    SELECT
+    <include refid="crmCluesColumns" />
+    FROM crm_clues a
+    <include refid="crmCluesJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      <include refid="Common.whereParams" />
+    </where>
+    <choose>
+      <when test="order != null and order != ''">
+        ORDER BY ${order}
+      </when>
+      <otherwise>
+        ORDER BY a.update_date DESC
+      </otherwise>
+    </choose>
+    LIMIT #{limit} OFFSET #{offset}
+  </select>
+  <select id="listAll" resultMap="resultCrmCluesMap">
+    SELECT
+    <include refid="crmCluesColumns" />
+    FROM crm_clues a
+    <include refid="crmCluesJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+    <choose>
+      <when test="order != null and order != ''">
+        ORDER BY ${order}
+      </when>
+      <otherwise>
+        ORDER BY a.update_date DESC
+      </otherwise>
+    </choose>
+  </select>
+  <insert id="insert">
+    INSERT INTO crm_clues(
+    <trim suffixOverrides=",">
+      id,
+      clues_pool_id,
+      clues_responsible,
+      clues_state,
+      clues_name,
+      clues_sources,
+      clues_contacts,
+      phone_number,
+      email,
+      company,
+      department,
+      position,
+      region,
+      gender,
+      birth_date,
+      wechat,
+      microblog,
+      qq,
+      addr,
+      create_by,
+      create_date,
+      update_by,
+      update_date,
+      del_flag,
+      remarks,
+      telephone,
+    </trim>
+    ) VALUES (
+    <trim suffixOverrides=",">
+      #{ id },
+      #{ cluesPool.id },
+      #{ cluesResponsible },
+      #{ cluesState },
+      #{ cluesName },
+      #{ cluesSources },
+      #{ cluesContacts },
+      #{ phoneNumber },
+      #{ email },
+      #{ company },
+      #{ department },
+      #{ position },
+      #{ region },
+      #{ gender },
+      #{ birthDate },
+      #{ wechat },
+      #{ microblog },
+      #{ qq },
+      #{ addr },
+      #{ createBy },
+      #{ createDate },
+      #{ updateBy },
+      #{ updateDate },
+      #{ delFlag },
+      #{ remarks },
+      #{ telephone },
+    </trim>
+    )
+  </insert>
+  <update id="update">
+    UPDATE crm_clues SET
+    <trim suffixOverrides=",">
+      clues_pool_id = #{ cluesPool.id },
+      clues_responsible = #{ cluesResponsible },
+      clues_state = #{ cluesState },
+      clues_name = #{ cluesName },
+      clues_sources = #{ cluesSources },
+      clues_contacts = #{ cluesContacts },
+      phone_number = #{ phoneNumber },
+      email = #{ email },
+      company = #{ company },
+      department = #{ department },
+      position = #{ position },
+      region = #{ region },
+      gender = #{ gender },
+      birth_date = #{ birthDate },
+      wechat = #{ wechat },
+      microblog = #{ microblog },
+      qq = #{ qq },
+      addr = #{ addr },
+      update_by = #{ updateBy },
+      update_date = #{ updateDate },
+      remarks = #{ remarks },
+      telephone = #{ telephone },
+      del_flag = #{ delFlag },
+    </trim>
+    WHERE id = #{id}
+    and update_date = #{oldUpdateDate}
+  </update>
+  <update id="delete">
+    UPDATE crm_clues SET
+    update_by = #{updateBy},
+    update_date = #{updateDate},
+    del_flag = #{DEL_FLAG_DELETE}
+    WHERE id = #{id}
+    and update_date = #{oldUpdateDate}
+  </update>
+  <delete id="physicsDelete">
+    delete from crm_clues
+    where
+    id in
+    <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+      #{entity.id}
+    </foreach>
+  </delete>
+  <insert id="bulkInsert" parameterType="java.util.List">
+    INSERT INTO crm_clues(
+    <trim suffixOverrides=",">
+      id,
+      clues_pool_id,
+      clues_responsible,
+      clues_state,
+      clues_name,
+      clues_sources,
+      clues_contacts,
+      phone_number,
+      email,
+      company,
+      department,
+      position,
+      region,
+      gender,
+      birth_date,
+      wechat,
+      microblog,
+      qq,
+      addr,
+      create_by,
+      create_date,
+      update_by,
+      update_date,
+      del_flag,
+      remarks,
+      telephone,
+    </trim>
+    ) VALUES
+    <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+      (
+      <trim suffixOverrides=",">
+        #{entity.id},
+        #{entity.cluesPool.id},
+        #{entity.cluesResponsible},
+        #{entity.cluesState},
+        #{entity.cluesName},
+        #{entity.cluesSources},
+        #{entity.cluesContacts},
+        #{entity.phoneNumber},
+        #{entity.email},
+        #{entity.company},
+        #{entity.department},
+        #{entity.position},
+        #{entity.region},
+        #{entity.gender},
+        #{entity.birthDate},
+        #{entity.wechat},
+        #{entity.microblog},
+        #{entity.qq},
+        #{entity.addr},
+        #{entity.createBy},
+        #{entity.createDate},
+        #{entity.updateBy},
+        #{entity.updateDate},
+        #{entity.delFlag},
+        #{entity.remarks},
+        #{entity.telephone},
+      </trim>
+      )
+    </foreach>
+  </insert>
+  <update id="bulkUpdate" parameterType="java.util.List">
+    UPDATE crm_clues
+    <set>
+      <trim prefix="clues_pool_id=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cluesPool.id}
+        </foreach>
+      </trim>
+      <trim prefix="clues_responsible=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cluesResponsible}
+        </foreach>
+      </trim>
+      <trim prefix="clues_state=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cluesState}
+        </foreach>
+      </trim>
+      <trim prefix="clues_name=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cluesName}
+        </foreach>
+      </trim>
+      <trim prefix="clues_sources=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cluesSources}
+        </foreach>
+      </trim>
+      <trim prefix="clues_contacts=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cluesContacts}
+        </foreach>
+      </trim>
+      <trim prefix="phone_number=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.phoneNumber}
+        </foreach>
+      </trim>
+      <trim prefix="email=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.email}
+        </foreach>
+      </trim>
+      <trim prefix="company=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.company}
+        </foreach>
+      </trim>
+      <trim prefix="department=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.department}
+        </foreach>
+      </trim>
+      <trim prefix="position=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.position}
+        </foreach>
+      </trim>
+      <trim prefix="region=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.region}
+        </foreach>
+      </trim>
+      <trim prefix="gender=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.gender}
+        </foreach>
+      </trim>
+      <trim prefix="birth_date=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.birthDate}
+        </foreach>
+      </trim>
+      <trim prefix="wechat=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.wechat}
+        </foreach>
+      </trim>
+      <trim prefix="microblog=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.microblog}
+        </foreach>
+      </trim>
+      <trim prefix="qq=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.qq}
+        </foreach>
+      </trim>
+      <trim prefix="addr=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.addr}
+        </foreach>
+      </trim>
+      <trim prefix="update_by=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateBy}
+        </foreach>
+      </trim>
+      <trim prefix="update_date=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateDate}
+        </foreach>
+      </trim>
+      <trim prefix="remarks=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.remarks}
+        </foreach>
+      </trim>
+      <trim prefix="telephone=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.telephone}
+        </foreach>
+      </trim>
+      <trim prefix="telephone=del_flag" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.delFlag}
+        </foreach>
+      </trim>
+    </set>
+    WHERE
+    <foreach collection="entitys" item="entity" index="index" separator="OR" open="(" close=")">
+      id = #{entity.id} and update_date = #{entity.oldUpdateDate}
+    </foreach>
+  </update>
+  <update id="bulkDelete" parameterType="java.util.List">
+    UPDATE crm_clues
+    <set>
+      <trim prefix="del_flag=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then 1
+        </foreach>
+      </trim>
+      <trim prefix="update_by=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateBy}
+        </foreach>
+      </trim>
+      <trim prefix="update_date=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateDate}
+        </foreach>
+      </trim>
+    </set>
+    WHERE
+    <foreach collection="entitys" item="entity" index="index" separator="OR" open="(" close=")">
+      id = #{entity.id} and update_date = #{entity.oldUpdateDate}
+    </foreach>
+  </update>
+</mapper>

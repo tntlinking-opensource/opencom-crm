@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.orders.dao.CrmOrdersDao">
+  <resultMap id="resultCopCpMap" type="com.geeke.orders.entity.CrmCopCp">
+    <result property="pdNo" column="pdNo" />
+    <result property="pdName" column="pdName" />
+    <result property="pdClassifyId" column="pdClassifyId" />
+    <result property="pdTypeId" column="pdTypeId" />
+    <result property="pdGuidePrice" column="pdGuidePrice" />
+    <result property="sigleNum" column="sigleNum" />
+    <result property="discount" column="discount" />
+    <result property="sumAount" column="sumAount" />
+  </resultMap>
+  <sql id="crmOrdersColumns">
+    <trim suffixOverrides=",">
+      a.id AS "id",
+      a.oeders_code AS "oedersCode",
+      ccm.cus_name AS "customName",
+      cbo.opp_name AS "bsoyName",
+      a.contract_code AS "contractCode",
+      a.contract_name AS "contractName",
+      a.orders_macount AS "ordersMacount",
+      a.orders_product AS "ordersProduct",
+      su.name AS "ordersHead",
+      a.wbnumber AS "wbnumber",
+      a.consignee AS "consignee",
+      a.consignee_phone AS "consigneePhone",
+      a.consignee_addr AS "consigneeAddr",
+      a.notes AS "notes",
+      a.create_by AS "createBy",
+      a.create_date AS "createDate",
+      a.update_by AS "updateBy",
+      a.update_date AS "updateDate",
+      a.del_flag AS "delFlag",
+    </trim>
+  </sql>
+  <sql id="crmOrdersJoins">
+    left join crm_customer ccm on a.custom_name = ccm.id
+    left join crm_opportunity cbo on a.bsoy_name = cbo.id
+    left join sys_user su on a.orders_head = su.id
+  </sql>
+  <select id="get" resultType="com.geeke.orders.entity.CrmOrders">
+    SELECT
+    <include refid="crmOrdersColumns" />
+    FROM crm_orders a
+    <include refid="crmOrdersJoins" />
+    WHERE a.id = #{id}
+  </select>
+  <select id="count" resultType="int">
+    SELECT COUNT(*) FROM crm_orders a
+    <include refid="crmOrdersJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+  </select>
+  <select id="listPage" resultType="com.geeke.orders.entity.CrmOrders">
+    SELECT
+    <include refid="crmOrdersColumns" />
+    FROM crm_orders a
+    <include refid="crmOrdersJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+    <choose>
+      <when test="order != null and order != ''">
+        ORDER BY ${order}
+      </when>
+      <otherwise>
+        ORDER BY a.create_date DESC
+      </otherwise>
+    </choose>
+    LIMIT #{limit} OFFSET #{offset}
+  </select>
+  <select id="listAll" resultType="com.geeke.orders.entity.CrmOrders">
+    SELECT
+    <include refid="crmOrdersColumns" />
+    FROM crm_orders a
+    <include refid="crmOrdersJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+    <choose>
+      <when test="order != null and order != ''">
+        ORDER BY ${order}
+      </when>
+      <otherwise>
+        ORDER BY a.create_date DESC
+      </otherwise>
+    </choose>
+  </select>
+  <insert id="insert">
+    INSERT INTO crm_orders(
+    <trim suffixOverrides=",">
+      id,
+      oeders_code,
+      custom_name,
+      bsoy_name,
+      contract_code,
+      contract_name,
+      orders_macount,
+      orders_product,
+      orders_head,
+      wbnumber,
+      consignee,
+      consignee_phone,
+      consignee_addr,
+      notes,
+      create_by,
+      create_date,
+      update_by,
+      update_date,
+      del_flag,
+    </trim>
+    ) VALUES (
+    <trim suffixOverrides=",">
+      #{ id },
+      #{ oedersCode },
+      #{ customName },
+      #{ bsoyName },
+      #{ contractCode },
+      #{ contractName },
+      #{ ordersMacount },
+      #{ ordersProduct },
+      #{ ordersHead },
+      #{ wbnumber },
+      #{ consignee },
+      #{ consigneePhone },
+      #{ consigneeAddr },
+      #{ notes },
+      #{ createBy },
+      #{ createDate },
+      #{ updateBy },
+      #{ updateDate },
+      #{ delFlag },
+    </trim>
+    )
+  </insert>
+  <update id="update">
+    UPDATE crm_orders SET
+    <trim suffixOverrides=",">
+      oeders_code = #{ oedersCode },
+      custom_name = #{ customName },
+      bsoy_name = #{ bsoyName },
+      contract_code = #{ contractCode },
+      contract_name = #{ contractName },
+      orders_macount = #{ ordersMacount },
+      orders_product = #{ ordersProduct },
+      orders_head = #{ ordersHead },
+      wbnumber = #{ wbnumber },
+      consignee = #{ consignee },
+      consignee_phone = #{ consigneePhone },
+      consignee_addr = #{ consigneeAddr },
+      notes = #{ notes },
+      update_by = #{ updateBy },
+      update_date = #{ updateDate },
+    </trim>
+    WHERE id = #{id}
+    and update_date = #{oldUpdateDate}
+  </update>
+  <update id="delete">
+    UPDATE crm_orders SET
+    update_by = #{updateBy},
+    update_date = #{updateDate},
+    del_flag = #{DEL_FLAG_DELETE}
+    WHERE id = #{id}
+    and update_date = #{oldUpdateDate}
+  </update>
+  <insert id="bulkInsert" parameterType="java.util.List">
+    INSERT INTO crm_orders(
+    <trim suffixOverrides=",">
+      id,
+      oeders_code,
+      custom_name,
+      bsoy_name,
+      contract_code,
+      contract_name,
+      orders_macount,
+      orders_product,
+      orders_head,
+      wbnumber,
+      consignee,
+      consignee_phone,
+      consignee_addr,
+      notes,
+      create_by,
+      create_date,
+      update_by,
+      update_date,
+      del_flag,
+    </trim>
+    ) VALUES
+    <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+      (
+      <trim suffixOverrides=",">
+        #{entity.id},
+        #{entity.oedersCode},
+        #{entity.customName},
+        #{entity.bsoyName},
+        #{entity.contractCode},
+        #{entity.contractName},
+        #{entity.ordersMacount},
+        #{entity.ordersProduct},
+        #{entity.ordersHead},
+        #{entity.wbnumber},
+        #{entity.consignee},
+        #{entity.consigneePhone},
+        #{entity.consigneeAddr},
+        #{entity.notes},
+        #{entity.createBy},
+        #{entity.createDate},
+        #{entity.updateBy},
+        #{entity.updateDate},
+        #{entity.delFlag},
+      </trim>
+      )
+    </foreach>
+  </insert>
+  <update id="bulkUpdate" parameterType="java.util.List">
+    UPDATE crm_orders
+    <set>
+      <trim prefix="oeders_code=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.oedersCode}
+        </foreach>
+      </trim>
+      <trim prefix="custom_name=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.customName}
+        </foreach>
+      </trim>
+      <trim prefix="bsoy_name=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.bsoyName}
+        </foreach>
+      </trim>
+      <trim prefix="contract_code=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.contractCode}
+        </foreach>
+      </trim>
+      <trim prefix="contract_name=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.contractName}
+        </foreach>
+      </trim>
+      <trim prefix="orders_macount=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.ordersMacount}
+        </foreach>
+      </trim>
+      <trim prefix="orders_product=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.ordersProduct}
+        </foreach>
+      </trim>
+      <trim prefix="orders_head=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.ordersHead}
+        </foreach>
+      </trim>
+      <trim prefix="wbnumber=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.wbnumber}
+        </foreach>
+      </trim>
+      <trim prefix="consignee=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.consignee}
+        </foreach>
+      </trim>
+      <trim prefix="consignee_phone=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.consigneePhone}
+        </foreach>
+      </trim>
+      <trim prefix="consignee_addr=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.consigneeAddr}
+        </foreach>
+      </trim>
+      <trim prefix="notes=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.notes}
+        </foreach>
+      </trim>
+      <trim prefix="update_by=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateBy}
+        </foreach>
+      </trim>
+      <trim prefix="update_date=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateDate}
+        </foreach>
+      </trim>
+    </set>
+    WHERE
+    <foreach collection="entitys" item="entity" index="index" separator="OR" open="(" close=")">
+      id = #{entity.id} and update_date = #{entity.oldUpdateDate}
+    </foreach>
+  </update>
+  <update id="bulkDelete" parameterType="java.util.List">
+    UPDATE crm_orders
+    <set>
+      <trim prefix="del_flag=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then 1
+        </foreach>
+      </trim>
+      <trim prefix="update_by=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateBy}
+        </foreach>
+      </trim>
+      <trim prefix="update_date=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateDate}
+        </foreach>
+      </trim>
+    </set>
+    WHERE
+    <foreach collection="entitys" item="entity" index="index" separator="OR" open="(" close=")">
+      id = #{entity.id} and update_date = #{entity.oldUpdateDate}
+    </foreach>
+  </update>
+
+  <select id="getseleddcpcount" resultType="int">
+    select count(*) from crm_opportunity_product cop
+    left join crm_products cp on cop.product_id  = cp.id
+    where cop.opp_id = #{bsoyName}
+  </select>
+
+
+  <select id="getseleddcp" resultMap="resultCopCpMap">
+    select
+    pd_no pdNo,pd_name pdName,cpc.pdc_name pdClassifyId,
+    pd_type_id pdTypeId,pd_guide_price pdGuidePrice,sigle_num sigleNum,
+    discount,pd_guide_price*sigle_num sumAount
+    from crm_opportunity_product cop
+    left join crm_products cp on cop.product_id  = cp.id
+    left join crm_products_classify cpc on cp.pd_classify_id = cpc.id
+    where cop.opp_id = #{bsoyName}
+  </select>
+
+</mapper>

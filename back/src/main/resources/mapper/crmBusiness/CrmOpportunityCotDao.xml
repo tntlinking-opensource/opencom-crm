@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.crmBusiness.dao.CrmOpportunityCotDao">
+  <sql id="crmOpportunityCotColumns">
+    <trim suffixOverrides=",">
+      a.id AS "id",
+      a.opp_id AS "opp.id",
+      a.cot_id AS "cotId",
+      a.create_by AS "createBy",
+      a.create_date AS "createDate",
+      a.update_by AS "updateBy",
+      a.update_date AS "updateDate",
+      a.del_flag AS "delFlag",
+      a.remarks AS "remarks",
+    </trim>
+  </sql>
+  <sql id="crmOpportunityCotJoins">
+    LEFT JOIN crm_opportunity opp ON opp.id = a.opp_id
+  </sql>
+    <select id="get" resultType="com.geeke.crmBusiness.entity.CrmOpportunityCot">
+    SELECT
+    <include refid="crmOpportunityCotColumns" />
+    FROM crm_opportunity_cot a
+    <include refid="crmOpportunityCotJoins" />
+    WHERE a.id = #{id}
+  </select>
+  <select id="count" resultType="int">
+    SELECT COUNT(*) FROM crm_opportunity_cot a
+    <include refid="crmOpportunityCotJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+  </select>
+  <select id="listPage" resultType="com.geeke.crmBusiness.entity.CrmOpportunityCot">
+    SELECT
+    <include refid="crmOpportunityCotColumns" />
+    FROM crm_opportunity_cot a
+    <include refid="crmOpportunityCotJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+    <choose>
+      <when test="order != null and order != ''">
+        ORDER BY ${order}
+      </when>
+      <otherwise>
+        ORDER BY a.update_date DESC
+      </otherwise>
+    </choose>
+    LIMIT #{limit} OFFSET #{offset}
+  </select>
+  <select id="listAll" resultType="com.geeke.crmBusiness.entity.CrmOpportunityCot">
+    SELECT
+    <include refid="crmOpportunityCotColumns" />
+    FROM crm_opportunity_cot a
+    <include refid="crmOpportunityCotJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+    <choose>
+      <when test="order != null and order != ''">
+        ORDER BY ${order}
+      </when>
+      <otherwise>
+        ORDER BY a.update_date DESC
+      </otherwise>
+    </choose>
+  </select>
+  <insert id="insert">
+    INSERT INTO crm_opportunity_cot(
+    <trim suffixOverrides=",">
+      id,
+      opp_id,
+      cot_id,
+      create_by,
+      create_date,
+      update_by,
+      update_date,
+      del_flag,
+      remarks,
+    </trim>
+    ) VALUES (
+    <trim suffixOverrides=",">
+      #{ id },
+      #{ opp.id },
+      #{ cotId },
+      #{ createBy },
+      #{ createDate },
+      #{ updateBy },
+      #{ updateDate },
+      #{ delFlag },
+      #{ remarks },
+    </trim>
+    )
+  </insert>
+  <update id="update">
+    UPDATE crm_opportunity_cot SET
+    <trim suffixOverrides=",">
+      opp_id = #{ opp.id },
+      cot_id = #{ cotId },
+      update_by = #{ updateBy },
+      update_date = #{ updateDate },
+      remarks = #{ remarks },
+    </trim>
+    WHERE id = #{id}
+    and update_date = #{oldUpdateDate}
+  </update>
+  <update id="delete">
+    UPDATE crm_opportunity_cot SET
+    update_by = #{updateBy},
+    update_date = #{updateDate},
+    del_flag = #{DEL_FLAG_DELETE}
+    WHERE id = #{id}
+    and update_date = #{oldUpdateDate}
+  </update>
+  <insert id="bulkInsert" parameterType="java.util.List">
+    INSERT INTO crm_opportunity_cot(
+    <trim suffixOverrides=",">
+      id,
+      opp_id,
+      cot_id,
+      create_by,
+      create_date,
+      update_by,
+      update_date,
+      del_flag,
+      remarks,
+    </trim>
+    ) VALUES
+    <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+      (
+      <trim suffixOverrides=",">
+        #{entity.id},
+        #{entity.opp.id},
+        #{entity.cotId},
+        #{entity.createBy},
+        #{entity.createDate},
+        #{entity.updateBy},
+        #{entity.updateDate},
+        #{entity.delFlag},
+        #{entity.remarks},
+      </trim>
+      )
+    </foreach>
+  </insert>
+  <update id="bulkUpdate" parameterType="java.util.List">
+    UPDATE crm_opportunity_cot
+    <set>
+      <trim prefix="opp_id=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.opp.id}
+        </foreach>
+      </trim>
+      <trim prefix="cot_id=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cotId}
+        </foreach>
+      </trim>
+      <trim prefix="update_by=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateBy}
+        </foreach>
+      </trim>
+      <trim prefix="update_date=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateDate}
+        </foreach>
+      </trim>
+      <trim prefix="remarks=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.remarks}
+        </foreach>
+      </trim>
+    </set>
+    WHERE
+    <foreach collection="entitys" item="entity" index="index" separator="OR" open="(" close=")">
+      id = #{entity.id} and update_date = #{entity.oldUpdateDate}
+    </foreach>
+  </update>
+  <update id="bulkDelete" parameterType="java.util.List">
+    UPDATE crm_opportunity_cot
+    <set>
+      <trim prefix="del_flag=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then 1
+        </foreach>
+      </trim>
+      <trim prefix="update_by=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateBy}
+        </foreach>
+      </trim>
+      <trim prefix="update_date=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateDate}
+        </foreach>
+      </trim>
+    </set>
+    WHERE
+    <foreach collection="entitys" item="entity" index="index" separator="OR" open="(" close=")">
+      id = #{entity.id} and update_date = #{entity.oldUpdateDate}
+    </foreach>
+  </update>
+  <update id="deleteByUnityCot">
+    update crm_opportunity_cot
+    set del_flag = #{delFlagDelete},
+        update_by = #{updateBy},
+        update_date = #{updateDate}
+    where opp_id = #{oppId}
+  </update>
+  <select id="getByCotId" resultType="com.geeke.contract.entity.CrmContract">
+    select
+      con.id AS "id",
+      con.dept_id AS "deptId",
+      con.user_id AS "userId",
+      con.customer_id AS "customerId",
+      con.opportunity_id AS "opportunityId",
+      con.contract_code AS "contractCode",
+      con.contract_name AS "contractName",
+      con.contract_amount AS "contractAmount",
+      con.sign_date AS "signDate",
+      con.begin_date AS "beginDate",
+      con.end_date AS "endDate",
+      con.party_a AS "partyA",
+      con.party_b AS "partyB",
+      con.pay_type AS "payType",
+      con.remark AS "remark",
+      con.attachment AS "attachment",
+      con.create_by AS "createBy",
+      con.update_by AS "updateBy",
+      con.create_date AS "createDate",
+      con.update_date AS "updateDate",
+      con.del_flag AS "delFlag",
+      con.proc_inst AS "procInst",
+      con.contract_status AS "contractStatus"
+    from crm_contract con
+    left join crm_opportunity_cot coc on coc.opp_id = con.opportunity_id and coc.cot_id = con.id
+    where coc.opp_id = #{oppId}
+    and con.del_flag = 0
+    and coc.del_flag = 0
+  </select>
+
+</mapper>

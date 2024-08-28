@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.crmBusiness.dao.CrmOpportunityDao">
+  <sql id="crmOpportunityColumns">
+    <trim suffixOverrides=",">
+      a.id AS "id",
+      a.customer_id AS "customer.id",
+      IFNULL(customer.cus_name,'') AS "customer.cusName",
+      a.opp_name AS "oppName",
+      a.opp_source AS "oppSource",
+      a.opp_stage AS "oppStage",
+      a.opp_contacts AS "oppContacts",
+      a.opp_pay AS "oppPay",
+      dep.name AS "oppDepartmentId",
+      a.opp_department  AS "oppDepartment",
+      a.opp_responsible AS "oppResponsible",
+      a.opp_respondepartId AS "oppRespondepartId",
+      a.opp_quotation AS "oppQuotation",
+      a.create_by AS "createBy",
+      a.create_date AS "createDate",
+      a.update_by AS "updateBy",
+      a.update_date AS "updateDate",
+      a.del_flag AS "delFlag",
+      a.remarks AS "remarks",
+    </trim>
+  </sql>
+  <sql id="crmOpportunityJoins">
+    LEFT JOIN crm_customer customer ON customer.id = a.customer_id
+    LEFT JOIN org_department dep on dep.code = a.opp_department
+  </sql>
+  <select id="get" resultType="com.geeke.crmBusiness.entity.CrmOpportunity">
+    SELECT
+    <include refid="crmOpportunityColumns" />
+    FROM crm_opportunity a
+    <include refid="crmOpportunityJoins" />
+    WHERE a.id = #{id}
+  </select>
+  <select id="count" resultType="int">
+    SELECT COUNT(*) FROM crm_opportunity a
+    <include refid="crmOpportunityJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+  </select>
+  <select id="listPage" resultType="com.geeke.crmBusiness.entity.CrmOpportunity">
+    SELECT
+    <include refid="crmOpportunityColumns" />
+    FROM crm_opportunity a
+    <include refid="crmOpportunityJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+    <choose>
+      <when test="order != null and order != ''">
+        ORDER BY ${order}
+      </when>
+      <otherwise>
+        ORDER BY a.update_date DESC
+      </otherwise>
+    </choose>
+    LIMIT #{limit} OFFSET #{offset}
+  </select>
+  <select id="listAll" resultType="com.geeke.crmBusiness.entity.CrmOpportunity">
+    SELECT
+    <include refid="crmOpportunityColumns" />
+    FROM crm_opportunity a
+    <include refid="crmOpportunityJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+    <choose>
+      <when test="order != null and order != ''">
+        ORDER BY ${order}
+      </when>
+      <otherwise>
+        ORDER BY a.update_date DESC
+      </otherwise>
+    </choose>
+  </select>
+  <insert id="insert">
+    INSERT INTO crm_opportunity(
+    <trim suffixOverrides=",">
+      id,
+      customer_id,
+      opp_name,
+      opp_source,
+      opp_stage,
+      opp_contacts,
+      opp_pay,
+      opp_department,
+      opp_responsible,
+      opp_respondepartId,
+      opp_quotation,
+      create_by,
+      create_date,
+      update_by,
+      update_date,
+      del_flag,
+      remarks,
+    </trim>
+    ) VALUES (
+    <trim suffixOverrides=",">
+      #{ id },
+      #{ customer.id },
+      #{ oppName },
+      #{ oppSource },
+      #{ oppStage },
+      #{ oppContacts },
+      #{ oppPay },
+      #{ oppDepartment },
+      #{ oppResponsible },
+      #{ oppRespondepartId },
+      #{ oppQuotation },
+      #{ createBy },
+      #{ createDate },
+      #{ updateBy },
+      #{ updateDate },
+      #{ delFlag },
+      #{ remarks },
+    </trim>
+    )
+  </insert>
+  <update id="update">
+    UPDATE crm_opportunity SET
+    <trim suffixOverrides=",">
+      customer_id = #{ customer.id },
+      opp_name = #{ oppName },
+      opp_source = #{ oppSource },
+      opp_stage = #{ oppStage },
+      opp_contacts = #{ oppContacts },
+      opp_pay = #{ oppPay },
+      opp_department = #{ oppDepartment },
+      opp_responsible = #{ oppResponsible },
+      opp_respondepartId = #{ oppRespondepartId },
+      opp_quotation = #{ oppQuotation },
+      update_by = #{ updateBy },
+      update_date = #{ updateDate },
+      remarks = #{ remarks },
+    </trim>
+    WHERE id = #{id}
+    and update_date = #{oldUpdateDate}
+  </update>
+  <update id="delete">
+    UPDATE crm_opportunity SET
+    update_by = #{updateBy},
+    update_date = #{updateDate},
+    del_flag = #{DEL_FLAG_DELETE}
+    WHERE id = #{id}
+    and update_date = #{oldUpdateDate}
+  </update>
+  <insert id="bulkInsert" parameterType="java.util.List">
+    INSERT INTO crm_opportunity(
+    <trim suffixOverrides=",">
+      id,
+      customer_id,
+      opp_name,
+      opp_source,
+      opp_stage,
+      opp_contacts,
+      opp_pay,
+      opp_department,
+      opp_responsible,
+      opp_respondepartId,
+      opp_quotation,
+      create_by,
+      create_date,
+      update_by,
+      update_date,
+      del_flag,
+      remarks,
+    </trim>
+    ) VALUES
+    <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+      (
+      <trim suffixOverrides=",">
+        #{entity.id},
+        #{entity.customer.id},
+        #{entity.oppName},
+        #{entity.oppSource},
+        #{entity.oppStage},
+        #{entity.oppContacts},
+        #{entity.oppPay},
+        #{entity.oppDepartment},
+        #{entity.oppResponsible},
+        #{entity.oppRespondepartId },
+        #{entity.oppQuotation},
+        #{entity.createBy},
+        #{entity.createDate},
+        #{entity.updateBy},
+        #{entity.updateDate},
+        #{entity.delFlag},
+        #{entity.remarks},
+      </trim>
+      )
+    </foreach>
+  </insert>
+  <update id="bulkUpdate" parameterType="java.util.List">
+    UPDATE crm_opportunity
+    <set>
+      <trim prefix="customer_id=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.customer.id}
+        </foreach>
+      </trim>
+      <trim prefix="opp_name=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.oppName}
+        </foreach>
+      </trim>
+      <trim prefix="opp_source=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.oppSource}
+        </foreach>
+      </trim>
+      <trim prefix="opp_stage=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.oppStage}
+        </foreach>
+      </trim>
+      <trim prefix="opp_contacts=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.oppContacts}
+        </foreach>
+      </trim>
+      <trim prefix="opp_pay=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.oppPay}
+        </foreach>
+      </trim>
+      <trim prefix="opp_department=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.oppDepartment}
+        </foreach>
+      </trim>
+      <trim prefix="opp_responsible=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.oppResponsible}
+        </foreach>
+      </trim>
+      <trim prefix="opp_respondepartId=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.oppRespondepartId}
+        </foreach>
+      </trim>
+      <trim prefix="opp_quotation=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.oppQuotation}
+        </foreach>
+      </trim>
+      <trim prefix="update_by=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateBy}
+        </foreach>
+      </trim>
+      <trim prefix="update_date=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateDate}
+        </foreach>
+      </trim>
+      <trim prefix="remarks=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.remarks}
+        </foreach>
+      </trim>
+    </set>
+    WHERE
+    <foreach collection="entitys" item="entity" index="index" separator="OR" open="(" close=")">
+      id = #{entity.id} and update_date = #{entity.oldUpdateDate}
+    </foreach>
+  </update>
+  <update id="bulkDelete" parameterType="java.util.List">
+    UPDATE crm_opportunity
+    <set>
+      <trim prefix="del_flag=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then 1
+        </foreach>
+      </trim>
+      <trim prefix="update_by=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateBy}
+        </foreach>
+      </trim>
+      <trim prefix="update_date=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateDate}
+        </foreach>
+      </trim>
+    </set>
+    WHERE
+    <foreach collection="entitys" item="entity" index="index" separator="OR" open="(" close=")">
+      id = #{entity.id} and update_date = #{entity.oldUpdateDate}
+    </foreach>
+  </update>
+</mapper>

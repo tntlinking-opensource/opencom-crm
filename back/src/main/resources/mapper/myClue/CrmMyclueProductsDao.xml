@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.myClue.dao.CrmMyclueProductsDao">
+  <sql id="crmMyclueProductsColumns">
+    <trim suffixOverrides=",">
+      a.id AS "id",
+      a.pd_no AS "pdNo",
+      a.pd_name AS "pdName",
+      a.pd_classify_id AS "pdClassifyId",
+      a.pd_guide_price AS "pdGuidePrice",
+      a.pd_cost_price AS "pdCostPrice",
+      a.pd_total AS "pdTotal",
+      a.pd_type_id AS "pdTypeId",
+      a.pd_status AS "pdStatus",
+      a.create_by AS "createBy",
+      a.create_date AS "createDate",
+      a.update_by AS "updateBy",
+      a.update_date AS "updateDate",
+      a.del_flag AS "delFlag",
+      a.remarks AS "remarks",
+      a.pd_zname AS "pdZname",
+      a.pd_classify_name AS "pdClassifyName",
+      a.pd_type_name AS "pdTypeName",
+      a.cnt_myclue_id AS "cntMyclueId",
+    </trim>
+  </sql>
+  <sql id="crmMyclueProductsJoins">
+  </sql>
+  <select id="get" resultType="com.geeke.myClue.entity.CrmMyclueProducts">
+    SELECT
+    <include refid="crmMyclueProductsColumns" />
+    FROM crm_myclue_products a
+    <include refid="crmMyclueProductsJoins" />
+    WHERE a.id = #{id}
+  </select>
+  <select id="count" resultType="int">
+    SELECT COUNT(*) FROM crm_myclue_products a
+    <include refid="crmMyclueProductsJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+  </select>
+  <select id="listPage" resultType="com.geeke.myClue.entity.CrmMyclueProducts">
+    SELECT
+    <include refid="crmMyclueProductsColumns" />
+    FROM crm_myclue_products a
+    <include refid="crmMyclueProductsJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+    <choose>
+      <when test="order != null and order != ''">
+        ORDER BY ${order}
+      </when>
+      <otherwise>
+        ORDER BY a.update_date DESC
+      </otherwise>
+    </choose>
+    LIMIT #{limit} OFFSET #{offset}
+  </select>
+  <select id="listAll" resultType="com.geeke.myClue.entity.CrmMyclueProducts">
+    SELECT
+    <include refid="crmMyclueProductsColumns" />
+    FROM crm_myclue_products a
+    <include refid="crmMyclueProductsJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+    <choose>
+      <when test="order != null and order != ''">
+        ORDER BY ${order}
+      </when>
+      <otherwise>
+        ORDER BY a.update_date DESC
+      </otherwise>
+    </choose>
+  </select>
+  <insert id="insert">
+    INSERT INTO crm_myclue_products(
+    <trim suffixOverrides=",">
+      id,
+      pd_no,
+      pd_name,
+      pd_classify_id,
+      pd_guide_price,
+      pd_cost_price,
+      pd_total,
+      pd_type_id,
+      pd_status,
+      create_by,
+      create_date,
+      update_by,
+      update_date,
+      del_flag,
+      remarks,
+      pd_zname,
+      pd_classify_name,
+      pd_type_name,
+      cnt_myclue_id,
+    </trim>
+    ) VALUES (
+    <trim suffixOverrides=",">
+      #{ id },
+      #{ pdNo },
+      #{ pdName },
+      #{ pdClassifyId },
+      #{ pdGuidePrice },
+      #{ pdCostPrice },
+      #{ pdTotal },
+      #{ pdTypeId },
+      #{ pdStatus },
+      #{ createBy },
+      #{ createDate },
+      #{ updateBy },
+      #{ updateDate },
+      #{ delFlag },
+      #{ remarks },
+      #{ pdZname },
+      #{ pdClassifyName },
+      #{ pdTypeName },
+      #{ cntMyclueId },
+    </trim>
+    )
+  </insert>
+  <update id="update">
+    UPDATE crm_myclue_products SET
+    <trim suffixOverrides=",">
+      pd_no = #{ pdNo },
+      pd_name = #{ pdName },
+      pd_classify_id = #{ pdClassifyId },
+      pd_guide_price = #{ pdGuidePrice },
+      pd_cost_price = #{ pdCostPrice },
+      pd_total = #{ pdTotal },
+      pd_type_id = #{ pdTypeId },
+      pd_status = #{ pdStatus },
+      update_by = #{ updateBy },
+      update_date = #{ updateDate },
+      remarks = #{ remarks },
+      pd_zname = #{ pdZname },
+      pd_classify_name = #{ pdClassifyName },
+      pd_type_name = #{ pdTypeName },
+      cnt_myclue_id = #{ cntMyclueId },
+    </trim>
+    WHERE id = #{id}
+    and update_date = #{oldUpdateDate}
+  </update>
+  <update id="delete">
+    UPDATE crm_myclue_products SET
+    update_by = #{updateBy},
+    update_date = #{updateDate},
+    del_flag = #{DEL_FLAG_DELETE}
+    WHERE id = #{id}
+    and update_date = #{oldUpdateDate}
+  </update>
+  <insert id="bulkInsert" parameterType="java.util.List">
+    INSERT INTO crm_myclue_products(
+    <trim suffixOverrides=",">
+      id,
+      pd_no,
+      pd_name,
+      pd_classify_id,
+      pd_guide_price,
+      pd_cost_price,
+      pd_total,
+      pd_type_id,
+      pd_status,
+      create_by,
+      create_date,
+      update_by,
+      update_date,
+      del_flag,
+      remarks,
+      pd_zname,
+      pd_classify_name,
+      pd_type_name,
+      cnt_myclue_id,
+    </trim>
+    ) VALUES
+    <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+      (
+      <trim suffixOverrides=",">
+        #{entity.id},
+        #{entity.pdNo},
+        #{entity.pdName},
+        #{entity.pdClassifyId},
+        #{entity.pdGuidePrice},
+        #{entity.pdCostPrice},
+        #{entity.pdTotal},
+        #{entity.pdTypeId},
+        #{entity.pdStatus},
+        #{entity.createBy},
+        #{entity.createDate},
+        #{entity.updateBy},
+        #{entity.updateDate},
+        #{entity.delFlag},
+        #{entity.remarks},
+        #{entity.pdZname},
+        #{entity.pdClassifyName},
+        #{entity.pdTypeName},
+        #{entity.cntMyclueId},
+      </trim>
+      )
+    </foreach>
+  </insert>
+  <update id="bulkUpdate" parameterType="java.util.List">
+    UPDATE crm_myclue_products
+    <set>
+      <trim prefix="pd_no=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.pdNo}
+        </foreach>
+      </trim>
+      <trim prefix="pd_name=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.pdName}
+        </foreach>
+      </trim>
+      <trim prefix="pd_classify_id=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.pdClassifyId}
+        </foreach>
+      </trim>
+      <trim prefix="pd_guide_price=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.pdGuidePrice}
+        </foreach>
+      </trim>
+      <trim prefix="pd_cost_price=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.pdCostPrice}
+        </foreach>
+      </trim>
+      <trim prefix="pd_total=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.pdTotal}
+        </foreach>
+      </trim>
+      <trim prefix="pd_type_id=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.pdTypeId}
+        </foreach>
+      </trim>
+      <trim prefix="pd_status=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.pdStatus}
+        </foreach>
+      </trim>
+      <trim prefix="update_by=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateBy}
+        </foreach>
+      </trim>
+      <trim prefix="update_date=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateDate}
+        </foreach>
+      </trim>
+      <trim prefix="remarks=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.remarks}
+        </foreach>
+      </trim>
+      <trim prefix="pd_zname=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.pdZname}
+        </foreach>
+      </trim>
+      <trim prefix="pd_classify_name=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.pdClassifyName}
+        </foreach>
+      </trim>
+      <trim prefix="pd_type_name=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.pdTypeName}
+        </foreach>
+      </trim>
+      <trim prefix="cnt_myclue_id=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cntMyclueId}
+        </foreach>
+      </trim>
+    </set>
+    WHERE
+    <foreach collection="entitys" item="entity" index="index" separator="OR" open="(" close=")">
+      id = #{entity.id} and update_date = #{entity.oldUpdateDate}
+    </foreach>
+  </update>
+  <update id="bulkDelete" parameterType="java.util.List">
+    UPDATE crm_myclue_products
+    <set>
+      <trim prefix="del_flag=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then 1
+        </foreach>
+      </trim>
+      <trim prefix="update_by=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateBy}
+        </foreach>
+      </trim>
+      <trim prefix="update_date=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateDate}
+        </foreach>
+      </trim>
+    </set>
+    WHERE
+    <foreach collection="entitys" item="entity" index="index" separator="OR" open="(" close=")">
+      id = #{entity.id} and update_date = #{entity.oldUpdateDate}
+    </foreach>
+  </update>
+</mapper>

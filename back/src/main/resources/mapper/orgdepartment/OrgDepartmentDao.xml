@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.orgdepartment.dao.OrgDepartmentDao">
+  <sql id="orgDepartmentColumns">
+    <trim suffixOverrides=",">
+      a.company_id AS "companyId",
+      a.code AS "code",
+      a.id AS "id",
+      a.name AS "name",
+    </trim>
+  </sql>
+  <sql id="orgDepartmentJoins">
+  </sql>
+  <select id="get" resultType="com.geeke.orgdepartment.entity.OrgDepartment">
+    SELECT
+    <include refid="orgDepartmentColumns" />
+    FROM org_department a
+    <include refid="orgDepartmentJoins" />
+    WHERE a.id = #{id}
+  </select>
+
+  <select id="getBycompany" resultType="com.geeke.orgdepartment.entity.OrgDepartment">
+    select 
+    od.id as id,
+    od.name as name 
+    from org_department od 
+    inner join sys_user su 
+    on od.company_id = su.company_id 
+    <include refid="orgDepartmentJoins" />
+    <if test='loginName != "admin" and loginName != "system"'>
+      where su.login_name = #{loginName}
+    </if>
+
+  </select>
+
+  <select id="count" resultType="int">
+    SELECT COUNT(*) FROM org_department a
+    <include refid="orgDepartmentJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      <include refid="Common.whereParams" />
+    </where>
+  </select>
+  <select id="listPage" resultType="com.geeke.orgdepartment.entity.OrgDepartment">
+    SELECT
+    <include refid="orgDepartmentColumns" />
+    FROM org_department a
+    <include refid="orgDepartmentJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      <include refid="Common.whereParams" />
+    </where>
+    <choose>
+      <when test="order != null and order != ''">
+        ORDER BY ${order}
+      </when>
+      <otherwise>
+        ORDER BY a.create_date DESC
+      </otherwise>
+    </choose>
+    LIMIT #{limit} OFFSET #{offset}
+  </select>
+  <select id="listAll" resultType="com.geeke.orgdepartment.entity.OrgDepartment">
+    SELECT
+    <include refid="orgDepartmentColumns" />
+    FROM org_department a
+    <include refid="orgDepartmentJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      <include refid="Common.whereParams" />
+    </where>
+    <choose>
+      <when test="order != null and order != ''">
+        ORDER BY ${order}
+      </when>
+      <otherwise>
+        ORDER BY a.create_date DESC
+      </otherwise>
+    </choose>
+  </select>
+  <insert id="insert">
+    INSERT INTO org_department(
+    <trim suffixOverrides=",">
+      company_id,
+      code,
+      id,
+      name,
+    </trim>
+    ) VALUES (
+    <trim suffixOverrides=",">
+      #{ companyId },
+      #{ code },
+      #{ id },
+      #{ name },
+    </trim>
+    )
+  </insert>
+  <update id="update">
+    UPDATE org_department SET
+    <trim suffixOverrides=",">
+      company_id = #{ companyId },
+      code = #{ code },
+      name = #{ name },
+    </trim>
+    WHERE id = #{id}
+  </update>
+  <update id="delete">
+    DELETE FROM org_department
+    WHERE id = #{id}
+  </update>
+  <insert id="bulkInsert" parameterType="java.util.List">
+    INSERT INTO org_department(
+    <trim suffixOverrides=",">
+      company_id,
+      code,
+      id,
+      name,
+    </trim>
+    ) VALUES
+    <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+      (
+      <trim suffixOverrides=",">
+        #{entity.companyId},
+        #{entity.code},
+        #{entity.id},
+        #{entity.name},
+      </trim>
+      )
+    </foreach>
+  </insert>
+  <update id="bulkUpdate" parameterType="java.util.List">
+    UPDATE org_department
+    <set>
+      <trim prefix="company_id=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.companyId}
+        </foreach>
+      </trim>
+      <trim prefix="code=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.code}
+        </foreach>
+      </trim>
+      <trim prefix="name=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.name}
+        </foreach>
+      </trim>
+    </set>
+    WHERE id IN
+    <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+      #{entity.id}
+    </foreach>
+  </update>
+  <update id="bulkDelete" parameterType="java.util.List">
+    DELETE FROM org_department
+    WHERE id IN
+    <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+      #{entity.id}
+    </foreach>
+  </update>
+</mapper>

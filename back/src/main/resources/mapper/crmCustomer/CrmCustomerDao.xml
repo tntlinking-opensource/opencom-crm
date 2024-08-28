@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.crmCustomer.dao.CrmCustomerDao">
+  <sql id="crmCustomerColumns">
+    <trim suffixOverrides=",">
+      a.id AS "id",
+      a.parent_id AS "parent.id",
+      IFNULL(parent.cus_name,'') AS "parent.cusName",
+      a.cus_name AS "cusName",
+      a.cus_type AS "cusType",
+      a.cus_source AS "cusSource",
+      a.cus_contacts AS "cusContacts",
+      a.cus_mobile AS "cusMobile",
+      a.cus_region AS "cusRegion",
+      a.cus_address AS "cusAddress",
+      a.cus_responsible AS "cusResponsible",
+      a.create_by AS "createBy",
+      a.create_date AS "createDate",
+      a.update_by AS "updateBy",
+      a.update_date AS "updateDate",
+      a.del_flag AS "delFlag",
+      a.remarks AS "remarks",
+      a.cus_stage AS "cusStage",
+    </trim>
+  </sql>
+  <sql id="crmCustomerJoins">
+    LEFT JOIN crm_customer parent ON parent.id = a.parent_id
+  </sql>
+  <select id="get" resultType="com.geeke.crmCustomer.entity.CrmCustomer">
+    SELECT
+    <include refid="crmCustomerColumns" />
+    FROM crm_customer a
+    <include refid="crmCustomerJoins" />
+    WHERE a.id = #{id}
+  </select>
+  <select id="count" resultType="int">
+    SELECT COUNT(*) FROM crm_customer a
+    <include refid="crmCustomerJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+  </select>
+  <select id="listPage" resultType="com.geeke.crmCustomer.entity.CrmCustomer">
+    SELECT
+    <include refid="crmCustomerColumns" />
+    FROM crm_customer a
+    <include refid="crmCustomerJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+    <choose>
+      <when test="order != null and order != ''">
+        ORDER BY ${order}
+      </when>
+      <otherwise>
+        ORDER BY a.update_date DESC
+      </otherwise>
+    </choose>
+    LIMIT #{limit} OFFSET #{offset}
+  </select>
+  <select id="listAll" resultType="com.geeke.crmCustomer.entity.CrmCustomer">
+    SELECT
+    <include refid="crmCustomerColumns" />
+    FROM crm_customer a
+    <include refid="crmCustomerJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+    <choose>
+      <when test="order != null and order != ''">
+        ORDER BY ${order}
+      </when>
+      <otherwise>
+        ORDER BY a.update_date DESC
+      </otherwise>
+    </choose>
+  </select>
+
+  <select id="queryCon" resultType="com.geeke.crmCommunicate.entity.CrmCommunicate">
+    select
+      cc.*
+    from
+      crm_customer_cnt c
+        left join crm_communicate cc on
+        c.cnt_id  =cc.id
+    where c.cus_id = ${cusId} and c.del_flag ='0' order by c.create_date desc
+  </select>
+  <insert id="insert">
+    INSERT INTO crm_customer(
+    <trim suffixOverrides=",">
+      id,
+      parent_id,
+      cus_name,
+      cus_type,
+      cus_source,
+      cus_contacts,
+      cus_mobile,
+      cus_region,
+      cus_address,
+      cus_responsible,
+      create_by,
+      create_date,
+      update_by,
+      update_date,
+      del_flag,
+      remarks,
+      cus_stage,
+    </trim>
+    ) VALUES (
+    <trim suffixOverrides=",">
+      #{ id },
+      #{ parent.id },
+      #{ cusName },
+      #{ cusType },
+      #{ cusSource },
+      #{ cusContacts },
+      #{ cusMobile },
+      #{ cusRegion },
+      #{ cusAddress },
+      #{ cusResponsible },
+      #{ createBy },
+      #{ createDate },
+      #{ updateBy },
+      #{ updateDate },
+      #{ delFlag },
+      #{ remarks },
+      #{ cusStage },
+    </trim>
+    )
+  </insert>
+  <update id="update">
+    UPDATE crm_customer SET
+    <trim suffixOverrides=",">
+      parent_id = #{ parent.id },
+      cus_name = #{ cusName },
+      cus_type = #{ cusType },
+      cus_source = #{ cusSource },
+      cus_contacts = #{ cusContacts },
+      cus_mobile = #{ cusMobile },
+      cus_region = #{ cusRegion },
+      cus_address = #{ cusAddress },
+      cus_responsible = #{ cusResponsible },
+      update_by = #{ updateBy },
+      update_date = #{ updateDate },
+      remarks = #{ remarks },
+      cus_stage = #{ cusStage },
+    </trim>
+    WHERE id = #{id}
+    and update_date = #{oldUpdateDate}
+  </update>
+  <update id="delete">
+    UPDATE crm_customer SET
+    update_by = #{updateBy},
+    update_date = #{updateDate},
+    del_flag = #{DEL_FLAG_DELETE}
+    WHERE id = #{id}
+    and update_date = #{oldUpdateDate}
+  </update>
+  <insert id="bulkInsert" parameterType="java.util.List">
+    INSERT INTO crm_customer(
+    <trim suffixOverrides=",">
+      id,
+      parent_id,
+      cus_name,
+      cus_type,
+      cus_source,
+      cus_contacts,
+      cus_mobile,
+      cus_region,
+      cus_address,
+      cus_responsible,
+      create_by,
+      create_date,
+      update_by,
+      update_date,
+      del_flag,
+      remarks,
+      cus_stage,
+    </trim>
+    ) VALUES
+    <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+      (
+      <trim suffixOverrides=",">
+        #{entity.id},
+        #{entity.parent.id},
+        #{entity.cusName},
+        #{entity.cusType},
+        #{entity.cusSource},
+        #{entity.cusContacts},
+        #{entity.cusMobile},
+        #{entity.cusRegion},
+        #{entity.cusAddress},
+        #{entity.cusResponsible},
+        #{entity.createBy},
+        #{entity.createDate},
+        #{entity.updateBy},
+        #{entity.updateDate},
+        #{entity.delFlag},
+        #{entity.remarks},
+        #{entity.cusStage},
+      </trim>
+      )
+    </foreach>
+  </insert>
+  <update id="bulkUpdate" parameterType="java.util.List">
+    UPDATE crm_customer
+    <set>
+      <trim prefix="parent_id=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.parent.id}
+        </foreach>
+      </trim>
+      <trim prefix="cus_name=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cusName}
+        </foreach>
+      </trim>
+      <trim prefix="cus_type=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cusType}
+        </foreach>
+      </trim>
+      <trim prefix="cus_source=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cusSource}
+        </foreach>
+      </trim>
+      <trim prefix="cus_contacts=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cusContacts}
+        </foreach>
+      </trim>
+      <trim prefix="cus_mobile=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cusMobile}
+        </foreach>
+      </trim>
+      <trim prefix="cus_region=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cusRegion}
+        </foreach>
+      </trim>
+      <trim prefix="cus_address=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cusAddress}
+        </foreach>
+      </trim>
+      <trim prefix="cus_responsible=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cusResponsible}
+        </foreach>
+      </trim>
+      <trim prefix="update_by=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateBy}
+        </foreach>
+      </trim>
+      <trim prefix="update_date=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateDate}
+        </foreach>
+      </trim>
+      <trim prefix="remarks=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.remarks}
+        </foreach>
+      </trim>
+      <trim prefix="cus_stage=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cusStage}
+        </foreach>
+      </trim>
+    </set>
+    WHERE
+    <foreach collection="entitys" item="entity" index="index" separator="OR" open="(" close=")">
+      id = #{entity.id} and update_date = #{entity.oldUpdateDate}
+    </foreach>
+  </update>
+  <update id="bulkDelete" parameterType="java.util.List">
+    UPDATE crm_customer
+    <set>
+      <trim prefix="del_flag=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then 1
+        </foreach>
+      </trim>
+      <trim prefix="update_by=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateBy}
+        </foreach>
+      </trim>
+      <trim prefix="update_date=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateDate}
+        </foreach>
+      </trim>
+    </set>
+    WHERE
+    <foreach collection="entitys" item="entity" index="index" separator="OR" open="(" close=")">
+      id = #{entity.id} and update_date = #{entity.oldUpdateDate}
+    </foreach>
+  </update>
+</mapper>

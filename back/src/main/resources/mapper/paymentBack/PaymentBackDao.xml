@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.paymentBack.dao.PaymentBackDao">
+  <sql id="paymentBackColumns">
+    <trim suffixOverrides=",">
+      a.id as "id",
+      a.contract_id as "contractId",
+      a.order as "order",
+      a.pay_date as "payDate",
+      a.pay_rate as "payRate",
+      a.pay_amount as "payAmount",
+      a.payment_back_date AS "paymentBackDate",
+      a.payment_back_amount AS "paymentBackAmount",
+      a.remark AS "remark",
+    </trim>
+  </sql>
+  <sql id="paymentBackJoins">
+    LEFT JOIN crm_contract contract ON contract.id = a.contract_id
+  </sql>
+  <select id="get" resultType="com.geeke.paymentBack.entity.PaymentBack">
+    SELECT
+    <include refid="paymentBackColumns" />
+    FROM payment_back a
+    WHERE a.contract_pay_id = #{contractPayId}
+  </select>
+  <select id="count" resultType="int">
+    SELECT COUNT(*) FROM payment_back a
+    <include refid="paymentBackJoins" />
+    <where>
+      1=1
+      AND a.contract_pay_id > 0
+      <include refid="Common.whereParams" />
+    </where>
+  </select>
+  <select id="listPage" resultType="com.geeke.contract.entity.CrmContract">
+    SELECT
+    <include refid="paymentBackColumns" />
+    FROM payment_back a
+    <include refid="paymentBackJoins" />
+    <where>
+      1=1
+      <include refid="Common.whereParams" />
+    </where>
+    <choose>
+      <when test="order != null and order != ''">
+        ORDER BY ${order}
+      </when>
+    </choose>
+    LIMIT #{limit} OFFSET #{offset}
+  </select>
+  <select id="listAll" resultType="com.geeke.paymentBack.entity.PaymentBack">
+    SELECT
+    <include refid="paymentBackColumns" />
+    FROM payment_back a
+    <include refid="paymentBackJoins" />
+    <where>
+      1=1
+      <include refid="Common.whereParams" />
+    </where>
+    <choose>
+      <when test="order != null and order != ''">
+        ORDER BY ${order}
+      </when>
+    </choose>
+  </select>
+  <insert id="insert">
+    INSERT INTO payment_back(
+    <trim suffixOverrides=",">
+      id,
+      contract_id,
+      order,
+      pay_date,
+      pay_rate,
+      pay_amount,
+      payment_back_date,
+      payment_back_amount,
+      remark,
+    </trim>
+    ) VALUES (
+    <trim suffixOverrides=",">
+      #{id},
+      #{contractId},
+      #{order},
+      #{payDate},
+      #{payRate},
+      #{payAmount},
+      #{paymentBackDate},
+      #{paymentBackAmount},
+      #{remark},
+    </trim>
+    )
+  </insert>
+  <update id="update">
+    UPDATE payment_back SET
+    <trim suffixOverrides=",">
+      payment_back_date = #{paymentBackDate},
+      payment_back_amount = #{paymentBackAmount},
+      remark = #{remark},
+    </trim>
+    WHERE id = #{id}
+  </update>
+  <delete id="delete">
+    delete from payment_back
+    WHERE contract_pay_id = #{contractPayId}
+  </delete>
+  <insert id="bulkInsert" parameterType="java.util.List">
+    INSERT INTO payment_back(
+    <trim suffixOverrides=",">
+      id,
+      contract_id,
+      `order`,
+      pay_date,
+      pay_rate,
+      pay_amount,
+      payment_back_date,
+      payment_back_amount,
+      remark,
+    </trim>
+    ) VALUES
+    <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+      (
+      <trim suffixOverrides=",">
+        #{entity.id},
+        #{entity.contractId},
+        #{entity.order},
+        #{entity.payDate},
+        #{entity.payRate},
+        #{entity.payAmount},
+        #{entity.paymentBackDate},
+        #{entity.paymentBackAmount},
+        #{entity.remark},
+      </trim>
+      )
+    </foreach>
+  </insert>
+  <update id="bulkUpdate" parameterType="java.util.List">
+    UPDATE payment_back
+    <set>
+      <trim prefix="payment_back_date=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.paymentBackDate}
+        </foreach>
+      </trim>
+      <trim prefix="payment_back_amount=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.paymentBackAmount}
+        </foreach>
+      </trim>
+      <trim prefix="remark=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.remark}
+        </foreach>
+      </trim>
+    </set>
+    WHERE
+    <foreach collection="entitys" item="entity" index="index" separator="OR" open="(" close=")">
+      id = #{entity.id}
+    </foreach>
+  </update>
+  <update id="bulkDelete" parameterType="java.util.List">
+
+  </update>
+
+  <select id="getByContractId" resultType="com.geeke.paymentBack.entity.PaymentBack">
+    SELECT
+    <include refid="paymentBackColumns" />,
+    a.pay_date as payDate,
+    a.pay_amount as payAmount
+    FROM payment_back a
+    WHERE a.contract_id = #{contractId}
+    ORDER BY a.pay_date DESC
+    LIMIT 1
+  </select>
+
+  <select id="getOddPaymentBackAmount" resultType="java.lang.String">
+    SELECT
+      IFNULL(c.contract_amount,0) - sum(IFNULL(a.payment_back_amount,0)) as sumPaymentBackAmount
+    FROM  crm_contract c
+    LEFT JOIN payment_back a ON c.id = a.contract_id
+    WHERE c.id = #{contractId}
+  </select>
+
+</mapper>

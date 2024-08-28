@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.myClue.dao.MyClueCrmCommunicateDao">
+  <sql id="myClueCrmCommunicateColumns">
+    <trim suffixOverrides=",">
+      a.id AS "id",
+      a.cnt_type_id AS "cntType",
+      a.cnt_pname AS "cntPname",
+      a.cnt_date AS "cntDate",
+      a.cnt_content AS "cntContent",
+      a.create_by AS "createBy",
+      a.create_date AS "createDate",
+      a.update_by AS "updateBy",
+      a.update_date AS "updateDate",
+      a.del_flag AS "delFlag",
+      a.remarks AS "remarks",
+      a.cut_next_date AS "cutNextDate",
+      a.cut_remind AS "cutRemind",
+      a.cut_remind_type AS "cutRemindType",
+      a.cnt_myclue_id AS "cntMyclueId",
+    </trim>
+  </sql>
+  <sql id="myClueCrmCommunicateJoins">
+  </sql>
+  <select id="get" resultType="com.geeke.myClue.entity.MyClueCrmCommunicate">
+    SELECT
+    <include refid="myClueCrmCommunicateColumns" />
+    FROM crm_communicate a
+    <include refid="myClueCrmCommunicateJoins" />
+    WHERE a.id = #{id}
+  </select>
+  <select id="count" resultType="int">
+    SELECT COUNT(*) FROM crm_communicate a
+    <include refid="myClueCrmCommunicateJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+  </select>
+  <select id="listPage" resultType="com.geeke.myClue.entity.MyClueCrmCommunicate">
+    SELECT
+    <include refid="myClueCrmCommunicateColumns" />
+    FROM crm_communicate a
+    <include refid="myClueCrmCommunicateJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+    <choose>
+      <when test="order != null and order != ''">
+        ORDER BY ${order}
+      </when>
+      <otherwise>
+        ORDER BY a.update_date DESC
+      </otherwise>
+    </choose>
+    LIMIT #{limit} OFFSET #{offset}
+  </select>
+  <select id="listAll" resultType="com.geeke.myClue.entity.MyClueCrmCommunicate">
+    SELECT
+    <include refid="myClueCrmCommunicateColumns" />
+    FROM crm_communicate a
+    <include refid="myClueCrmCommunicateJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+    <choose>
+      <when test="order != null and order != ''">
+        ORDER BY ${order}
+      </when>
+      <otherwise>
+        ORDER BY a.update_date DESC
+      </otherwise>
+    </choose>
+  </select>
+  <insert id="insert">
+    INSERT INTO crm_communicate(
+    <trim suffixOverrides=",">
+      id,
+      cnt_type_id,
+      cnt_pname,
+      cnt_date,
+      cnt_content,
+      create_by,
+      create_date,
+      update_by,
+      update_date,
+      del_flag,
+      remarks,
+      cut_next_date,
+      cut_remind,
+      cut_remind_type,
+      cnt_myclue_id,
+    </trim>
+    ) VALUES (
+    <trim suffixOverrides=",">
+      #{ id },
+      #{ cntType },
+      #{ cntPname },
+      #{ cntDate },
+      #{ cntContent },
+      #{ createBy },
+      #{ createDate },
+      #{ updateBy },
+      #{ updateDate },
+      #{ delFlag },
+      #{ remarks },
+      #{ cutNextDate },
+      #{ cutRemind },
+      #{ cutRemindType },
+      #{ cntMyclueId },
+    </trim>
+    )
+  </insert>
+  <update id="update">
+    UPDATE crm_communicate SET
+    <trim suffixOverrides=",">
+      cnt_type_id = #{ cntType },
+      cnt_pname = #{ cntPname },
+      cnt_date = #{ cntDate },
+      cnt_content = #{ cntContent },
+      update_by = #{ updateBy },
+      update_date = #{ updateDate },
+      remarks = #{ remarks },
+      cut_next_date = #{ cutNextDate },
+      cut_remind = #{ cutRemind },
+      cut_remind_type = #{ cutRemindType },
+      cnt_myclue_id = #{ cntMyclueId },
+    </trim>
+    WHERE id = #{id}
+    and update_date = #{oldUpdateDate}
+  </update>
+  <update id="delete">
+    UPDATE crm_communicate SET
+    update_by = #{updateBy},
+    update_date = #{updateDate},
+    del_flag = #{DEL_FLAG_DELETE}
+    WHERE id = #{id}
+    and update_date = #{oldUpdateDate}
+  </update>
+  <insert id="bulkInsert" parameterType="java.util.List">
+    INSERT INTO crm_communicate(
+    <trim suffixOverrides=",">
+      id,
+      cnt_type_id,
+      cnt_pname,
+      cnt_date,
+      cnt_content,
+      create_by,
+      create_date,
+      update_by,
+      update_date,
+      del_flag,
+      remarks,
+      cut_next_date,
+      cut_remind,
+      cut_remind_type,
+      cnt_myclue_id,
+    </trim>
+    ) VALUES
+    <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+      (
+      <trim suffixOverrides=",">
+        #{entity.id},
+        #{entity.cntType},
+        #{entity.cntPname},
+        #{entity.cntDate},
+        #{entity.cntContent},
+        #{entity.createBy},
+        #{entity.createDate},
+        #{entity.updateBy},
+        #{entity.updateDate},
+        #{entity.delFlag},
+        #{entity.remarks},
+        #{entity.cutNextDate},
+        #{entity.cutRemind},
+        #{entity.cutRemindType},
+        #{entity.cntMyclueId},
+      </trim>
+      )
+    </foreach>
+  </insert>
+  <update id="bulkUpdate" parameterType="java.util.List">
+    UPDATE crm_communicate
+    <set>
+      <trim prefix="cnt_type_id=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cntType}
+        </foreach>
+      </trim>
+      <trim prefix="cnt_pname=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cntPname}
+        </foreach>
+      </trim>
+      <trim prefix="cnt_date=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cntDate}
+        </foreach>
+      </trim>
+      <trim prefix="cnt_content=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cntContent}
+        </foreach>
+      </trim>
+      <trim prefix="update_by=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateBy}
+        </foreach>
+      </trim>
+      <trim prefix="update_date=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateDate}
+        </foreach>
+      </trim>
+      <trim prefix="remarks=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.remarks}
+        </foreach>
+      </trim>
+      <trim prefix="cut_next_date=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cutNextDate}
+        </foreach>
+      </trim>
+      <trim prefix="cut_remind=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cutRemind}
+        </foreach>
+      </trim>
+      <trim prefix="cut_remind_type=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cutRemindType}
+        </foreach>
+      </trim>
+      <trim prefix="cnt_myclue_id=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.cntMyclueId}
+        </foreach>
+      </trim>
+    </set>
+    WHERE
+    <foreach collection="entitys" item="entity" index="index" separator="OR" open="(" close=")">
+      id = #{entity.id} and update_date = #{entity.oldUpdateDate}
+    </foreach>
+  </update>
+  <update id="bulkDelete" parameterType="java.util.List">
+    UPDATE crm_communicate
+    <set>
+      <trim prefix="del_flag=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then 1
+        </foreach>
+      </trim>
+      <trim prefix="update_by=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateBy}
+        </foreach>
+      </trim>
+      <trim prefix="update_date=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateDate}
+        </foreach>
+      </trim>
+    </set>
+    WHERE
+    <foreach collection="entitys" item="entity" index="index" separator="OR" open="(" close=")">
+      id = #{entity.id} and update_date = #{entity.oldUpdateDate}
+    </foreach>
+  </update>
+</mapper>

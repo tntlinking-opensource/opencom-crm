@@ -1,0 +1,364 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.contacts.dao.CrmContactsDao">
+  <sql id="crmContactsColumns">
+    <trim suffixOverrides=",">
+      a.id AS "id",
+      a.contacts_name AS "contactsName",
+      <!--
+      a.custom_name AS "customName",
+      a.bsoy AS "bsoy",
+      -->
+      ccm.cus_name AS "customName",
+      cbo.opp_name AS "bsoy",
+      a.custom_name AS "customNameid",
+      a.bsoy AS "bsoyid",
+      a.sex AS "sex",
+      a.borndate AS "borndate",
+      a.phone_number AS "phoneNumber",
+      a.email AS "email",
+      a.contact_phone AS "contactPhone",
+      a.qnumber AS "qnumber",
+      a.wenumber AS "wenumber",
+      a.wbnumber AS "wbnumber",
+      a.region AS "region",
+      a.address AS "address",
+      a.depart AS "depart",
+      a.work_post AS "workPost",
+      a.notes AS "notes",
+      a.create_by AS "createBy",
+      a.create_date AS "createDate",
+      a.update_by AS "updateBy",
+      a.update_date AS "updateDate",
+      a.del_flag AS "delFlag",
+    </trim>
+  </sql>
+  <sql id="crmContactsJoins">
+    left join crm_customer ccm on a.custom_name = ccm.id
+    left join crm_opportunity cbo on a.bsoy = cbo.id
+  </sql>
+  <select id="get" resultType="com.geeke.contacts.entity.CrmContacts">
+    SELECT
+    <include refid="crmContactsColumns" />
+    FROM crm_contacts a
+    <include refid="crmContactsJoins" />
+    WHERE a.id = #{id}
+  </select>
+
+  <select id="count" resultType="int">
+    SELECT COUNT(*) FROM crm_contacts a
+    <include refid="crmContactsJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+  </select>
+  <select id="listPage" resultType="com.geeke.contacts.entity.CrmContacts">
+    SELECT
+    <include refid="crmContactsColumns" />
+    FROM crm_contacts a
+    <include refid="crmContactsJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+    <choose>
+      <when test="order != null and order != ''">
+        ORDER BY ${order}
+      </when>
+      <otherwise>
+        ORDER BY a.create_date DESC
+      </otherwise>
+    </choose>
+    LIMIT #{limit} OFFSET #{offset}
+  </select>
+  <select id="listAll" resultType="com.geeke.contacts.entity.CrmContacts">
+    SELECT
+    <include refid="crmContactsColumns" />
+    FROM crm_contacts a
+    <include refid="crmContactsJoins" />
+    <where>
+      1=1
+      AND a.id > 0
+      AND a.del_flag = #{DEL_FLAG_NORMAL}
+      <include refid="Common.whereParams" />
+    </where>
+    <choose>
+      <when test="order != null and order != ''">
+        ORDER BY ${order}
+      </when>
+      <otherwise>
+        ORDER BY a.create_date DESC
+      </otherwise>
+    </choose>
+  </select>
+  <insert id="insert">
+    INSERT INTO crm_contacts(
+    <trim suffixOverrides=",">
+      id,
+      contacts_name,
+      custom_name,
+      bsoy,
+      sex,
+      borndate,
+      phone_number,
+      email,
+      contact_phone,
+      qnumber,
+      wenumber,
+      wbnumber,
+      region,
+      address,
+      depart,
+      work_post,
+      notes,
+      create_by,
+      create_date,
+      update_by,
+      update_date,
+      del_flag,
+    </trim>
+    ) VALUES (
+    <trim suffixOverrides=",">
+      #{ id },
+      #{ contactsName },
+      #{ customName },
+      #{ bsoy },
+      #{ sex },
+      #{ borndate },
+      #{ phoneNumber },
+      #{ email },
+      #{ contactPhone },
+      #{ qnumber },
+      #{ wenumber },
+      #{ wbnumber },
+      #{ region },
+      #{ address },
+      #{ depart },
+      #{ workPost },
+      #{ notes },
+      #{ createBy },
+      #{ createDate },
+      #{ updateBy },
+      #{ updateDate },
+      #{ delFlag },
+    </trim>
+    )
+  </insert>
+  <update id="update">
+    UPDATE crm_contacts SET
+    <trim suffixOverrides=",">
+      contacts_name = #{ contactsName },
+      custom_name = #{ customName },
+      bsoy = #{ bsoy },
+      sex = #{ sex },
+      borndate = #{ borndate },
+      phone_number = #{ phoneNumber },
+      email = #{ email },
+      contact_phone = #{ contactPhone },
+      qnumber = #{ qnumber },
+      wenumber = #{ wenumber },
+      wbnumber = #{ wbnumber },
+      region = #{ region },
+      address = #{ address },
+      depart = #{ depart },
+      work_post = #{ workPost },
+      notes = #{ notes },
+      update_by = #{ updateBy },
+      update_date = #{ updateDate },
+    </trim>
+    WHERE id = #{id}
+    and update_date = #{oldUpdateDate}
+  </update>
+  <update id="delete">
+    UPDATE crm_contacts SET
+    update_by = #{updateBy},
+    update_date = #{updateDate},
+    del_flag = #{DEL_FLAG_DELETE}
+    WHERE id = #{id}
+    and update_date = #{oldUpdateDate}
+  </update>
+  <insert id="bulkInsert" parameterType="java.util.List">
+    INSERT INTO crm_contacts(
+    <trim suffixOverrides=",">
+      id,
+      contacts_name,
+      custom_name,
+      bsoy,
+      sex,
+      borndate,
+      phone_number,
+      email,
+      contact_phone,
+      qnumber,
+      wenumber,
+      wbnumber,
+      region,
+      address,
+      depart,
+      work_post,
+      notes,
+      create_by,
+      create_date,
+      update_by,
+      update_date,
+      del_flag,
+    </trim>
+    ) VALUES
+    <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+      (
+      <trim suffixOverrides=",">
+        #{entity.id},
+        #{entity.contactsName},
+        #{entity.customName},
+        #{entity.bsoy},
+        #{entity.sex},
+        #{entity.borndate},
+        #{entity.phoneNumber},
+        #{entity.email},
+        #{entity.contactPhone},
+        #{entity.qnumber},
+        #{entity.wenumber},
+        #{entity.wbnumber},
+        #{entity.region},
+        #{entity.address},
+        #{entity.depart},
+        #{entity.workPost},
+        #{entity.notes},
+        #{entity.createBy},
+        #{entity.createDate},
+        #{entity.updateBy},
+        #{entity.updateDate},
+        #{entity.delFlag},
+      </trim>
+      )
+    </foreach>
+  </insert>
+  <update id="bulkUpdate" parameterType="java.util.List">
+    UPDATE crm_contacts
+    <set>
+      <trim prefix="contacts_name=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.contactsName}
+        </foreach>
+      </trim>
+      <trim prefix="custom_name=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.customName}
+        </foreach>
+      </trim>
+      <trim prefix="bsoy=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.bsoy}
+        </foreach>
+      </trim>
+      <trim prefix="sex=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.sex}
+        </foreach>
+      </trim>
+      <trim prefix="borndate=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.borndate}
+        </foreach>
+      </trim>
+      <trim prefix="phone_number=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.phoneNumber}
+        </foreach>
+      </trim>
+      <trim prefix="email=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.email}
+        </foreach>
+      </trim>
+      <trim prefix="contact_phone=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.contactPhone}
+        </foreach>
+      </trim>
+      <trim prefix="qnumber=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.qnumber}
+        </foreach>
+      </trim>
+      <trim prefix="wenumber=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.wenumber}
+        </foreach>
+      </trim>
+      <trim prefix="wbnumber=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.wbnumber}
+        </foreach>
+      </trim>
+      <trim prefix="region=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.region}
+        </foreach>
+      </trim>
+      <trim prefix="address=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.address}
+        </foreach>
+      </trim>
+      <trim prefix="depart=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.depart}
+        </foreach>
+      </trim>
+      <trim prefix="work_post=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.workPost}
+        </foreach>
+      </trim>
+      <trim prefix="notes=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.notes}
+        </foreach>
+      </trim>
+      <trim prefix="update_by=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateBy}
+        </foreach>
+      </trim>
+      <trim prefix="update_date=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateDate}
+        </foreach>
+      </trim>
+    </set>
+    WHERE
+    <foreach collection="entitys" item="entity" index="index" separator="OR" open="(" close=")">
+      id = #{entity.id} and update_date = #{entity.oldUpdateDate}
+    </foreach>
+  </update>
+  <update id="bulkDelete" parameterType="java.util.List">
+    UPDATE crm_contacts
+    <set>
+      <trim prefix="del_flag=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then 1
+        </foreach>
+      </trim>
+      <trim prefix="update_by=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateBy}
+        </foreach>
+      </trim>
+      <trim prefix="update_date=case" suffix="end,">
+        <foreach collection="entitys" item="entity" index="index">
+          when id=#{entity.id} then #{entity.updateDate}
+        </foreach>
+      </trim>
+    </set>
+    WHERE
+    <foreach collection="entitys" item="entity" index="index" separator="OR" open="(" close=")">
+      id = #{entity.id} and update_date = #{entity.oldUpdateDate}
+    </foreach>
+  </update>
+</mapper>
